@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:charity_managment/features/campaigns/presentation/providers/followed_campaigns_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_repository_provider.dart';
 
 class CampaignFollowController extends StateNotifier<AsyncValue<Set<String>>> {
@@ -38,6 +39,7 @@ class CampaignFollowController extends StateNotifier<AsyncValue<Set<String>>> {
         campaignId: campaignId,
         followed: shouldFollow,
       );
+      _ref.invalidate(followedCampaignsProvider);
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
       state = AsyncValue.data(current);

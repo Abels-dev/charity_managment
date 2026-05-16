@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_detail_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_follow_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/utils/campaign_formatters.dart';
+import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_status_badge.dart';
+import 'package:charity_managment/models/campaign.dart';
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
 import 'package:charity_managment/shared/widgets/empty_state.dart';
@@ -49,7 +51,13 @@ class CampaignDetailScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               Text('By ${campaign.organizationName}'),
               const SizedBox(height: 6),
-              Text(campaign.category.label),
+              Row(
+                children: [
+                  Text(campaign.category.label),
+                  const SizedBox(width: 8),
+                  CampaignStatusBadge(status: campaign.status),
+                ],
+              ),
               const SizedBox(height: 14),
               LinearProgressIndicator(value: campaign.progress),
               const SizedBox(height: 10),
@@ -65,17 +73,20 @@ class CampaignDetailScreen extends ConsumerWidget {
               Text('Remaining: ${CampaignFormatters.money(campaign.remainingAmount)}'),
               const SizedBox(height: 16),
               Text(
-                campaign.description ?? campaign.summary,
+                campaign.description,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 16),
               _MetaRow(label: 'Location', value: campaign.location ?? 'N/A'),
-              _MetaRow(label: 'End date', value: CampaignFormatters.shortDate(campaign.endDateIso)),
-              _MetaRow(label: 'Donors', value: '${campaign.donorCount ?? 0}'),
-              _MetaRow(label: 'Status', value: campaign.isActive ? 'Active' : 'Completed'),
+              _MetaRow(label: 'Start date', value: CampaignFormatters.shortDate(campaign.startDate)),
+              _MetaRow(label: 'End date', value: CampaignFormatters.shortDate(campaign.endDate)),
+              _MetaRow(label: 'Donors', value: '${campaign.donorCount}'),
+              _MetaRow(label: 'Status', value: campaign.status.label),
               const SizedBox(height: 20),
               FilledButton(
-                onPressed: () {
+                onPressed: campaign.status == CampaignStatus.closed
+                    ? null
+                    : () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Donation flow will be added soon.')),
                   );

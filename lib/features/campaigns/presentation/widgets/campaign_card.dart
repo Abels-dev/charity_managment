@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:charity_managment/features/campaigns/presentation/utils/campaign_formatters.dart';
+import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_status_badge.dart';
 import 'package:charity_managment/models/campaign.dart';
 
 class CampaignCard extends StatelessWidget {
@@ -39,6 +40,8 @@ class CampaignCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ),
+                  CampaignStatusBadge(status: campaign.status),
+                  const SizedBox(width: 4),
                   IconButton(
                     icon: Icon(
                       isFollowed ? Icons.favorite : Icons.favorite_border,

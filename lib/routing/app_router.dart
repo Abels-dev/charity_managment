@@ -11,6 +11,10 @@ import 'package:charity_managment/features/authentication/presentation/screens/r
 import 'package:charity_managment/features/authentication/presentation/screens/splash_screen.dart';
 import 'package:charity_managment/features/campaigns/presentation/screens/campaign_detail_screen.dart';
 import 'package:charity_managment/features/campaigns/presentation/screens/campaigns_screen.dart';
+import 'package:charity_managment/features/campaigns/presentation/screens/create_campaign_screen.dart';
+import 'package:charity_managment/features/campaigns/presentation/screens/edit_campaign_screen.dart';
+import 'package:charity_managment/features/campaigns/presentation/screens/followed_campaigns_screen.dart';
+import 'package:charity_managment/features/campaigns/presentation/screens/my_campaigns_screen.dart';
 import 'package:charity_managment/features/charity_dashboard/presentation/screens/charity_dashboard_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donations_screen.dart';
 import 'package:charity_managment/features/notifications/presentation/screens/notifications_screen.dart';
@@ -57,11 +61,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const CampaignsScreen(),
       ),
       GoRoute(
+        path: AppRoutes.createCampaign,
+        builder: (context, state) => const CreateCampaignScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.editCampaignPattern,
+        builder: (context, state) {
+          final campaignId = state.pathParameters['campaignId']!;
+          return EditCampaignScreen(campaignId: campaignId);
+        },
+      ),
+      GoRoute(
         path: AppRoutes.campaignDetailPattern,
         builder: (context, state) {
           final campaignId = state.pathParameters['campaignId']!;
           return CampaignDetailScreen(campaignId: campaignId);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.followedCampaigns,
+        builder: (context, state) => const FollowedCampaignsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.myCampaigns,
+        builder: (context, state) => const MyCampaignsScreen(),
       ),
       GoRoute(
         path: AppRoutes.donations,
@@ -89,12 +112,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       if (auth.isAuthenticated) {
+        final role = auth.user?.role;
+
         if (location == AppRoutes.charityDashboard && auth.user?.role == UserRole.donor) {
           return AppRoutes.campaigns;
         }
 
+        if (role == UserRole.donor && _isCharityOnlyLocation(location)) {
+          return AppRoutes.campaigns;
+        }
+
+        if (role == UserRole.charityOrganization && location == AppRoutes.followedCampaigns) {
+          return AppRoutes.myCampaigns;
+        }
+
         if (isAuthRoute || location == AppRoutes.root) {
-          return _defaultRouteForRole(auth.user?.role);
+          return _defaultRouteForRole(role);
         }
 
         return null;
@@ -131,6 +164,9 @@ const _authRoutes = {
 
 const _protectedRoutes = {
   AppRoutes.campaigns,
+  AppRoutes.followedCampaigns,
+  AppRoutes.myCampaigns,
+  AppRoutes.createCampaign,
   AppRoutes.donations,
   AppRoutes.notifications,
   AppRoutes.profile,
@@ -145,9 +181,17 @@ bool _isProtectedLocation(String location) {
   return location.startsWith('${AppRoutes.campaigns}/');
 }
 
+bool _isCharityOnlyLocation(String location) {
+  if (location == AppRoutes.myCampaigns || location == AppRoutes.createCampaign) {
+    return true;
+  }
+
+  return location.endsWith('/edit');
+}
+
 String _defaultRouteForRole(UserRole? role) {
   if (role == UserRole.charityOrganization) {
-    return AppRoutes.charityDashboard;
+    return AppRoutes.myCampaigns;
   }
   return AppRoutes.campaigns;
 }

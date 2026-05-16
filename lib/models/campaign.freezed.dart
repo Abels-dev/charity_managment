@@ -22,19 +22,21 @@ Campaign _$CampaignFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Campaign {
   String get id => throw _privateConstructorUsedError;
+  String get charityId => throw _privateConstructorUsedError;
+  String get charityName => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
-  String get summary => throw _privateConstructorUsedError;
-  String get organizationName => throw _privateConstructorUsedError;
-  double get goalAmount => throw _privateConstructorUsedError;
+  String get description => throw _privateConstructorUsedError;
+  String get imageUrl => throw _privateConstructorUsedError;
+  double get targetAmount => throw _privateConstructorUsedError;
   double get currentAmount => throw _privateConstructorUsedError;
-  String get endDateIso => throw _privateConstructorUsedError;
-  bool get isActive => throw _privateConstructorUsedError;
-  @JsonKey(unknownEnumValue: CampaignCategory.emergency)
+  int get donorCount => throw _privateConstructorUsedError;
+  DateTime get startDate => throw _privateConstructorUsedError;
+  DateTime get endDate => throw _privateConstructorUsedError;
+  DateTime get createdAt => throw _privateConstructorUsedError;
+  DateTime get updatedAt => throw _privateConstructorUsedError;
+  CampaignStatus get status => throw _privateConstructorUsedError;
   CampaignCategory get category => throw _privateConstructorUsedError;
-  String? get description => throw _privateConstructorUsedError;
   String? get location => throw _privateConstructorUsedError;
-  String? get imageUrl => throw _privateConstructorUsedError;
-  int? get donorCount => throw _privateConstructorUsedError;
 
   /// Serializes this Campaign to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -53,19 +55,21 @@ abstract class $CampaignCopyWith<$Res> {
   @useResult
   $Res call({
     String id,
+    String charityId,
+    String charityName,
     String title,
-    String summary,
-    String organizationName,
-    double goalAmount,
+    String description,
+    String imageUrl,
+    double targetAmount,
     double currentAmount,
-    String endDateIso,
-    bool isActive,
-    @JsonKey(unknownEnumValue: CampaignCategory.emergency)
+    int donorCount,
+    DateTime startDate,
+    DateTime endDate,
+    DateTime createdAt,
+    DateTime updatedAt,
+    CampaignStatus status,
     CampaignCategory category,
-    String? description,
     String? location,
-    String? imageUrl,
-    int? donorCount,
   });
 }
 
@@ -85,18 +89,21 @@ class _$CampaignCopyWithImpl<$Res, $Val extends Campaign>
   @override
   $Res call({
     Object? id = null,
+    Object? charityId = null,
+    Object? charityName = null,
     Object? title = null,
-    Object? summary = null,
-    Object? organizationName = null,
-    Object? goalAmount = null,
+    Object? description = null,
+    Object? imageUrl = null,
+    Object? targetAmount = null,
     Object? currentAmount = null,
-    Object? endDateIso = null,
-    Object? isActive = null,
+    Object? donorCount = null,
+    Object? startDate = null,
+    Object? endDate = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
+    Object? status = null,
     Object? category = null,
-    Object? description = freezed,
     Object? location = freezed,
-    Object? imageUrl = freezed,
-    Object? donorCount = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -104,54 +111,66 @@ class _$CampaignCopyWithImpl<$Res, $Val extends Campaign>
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
                       as String,
+            charityId: null == charityId
+                ? _value.charityId
+                : charityId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            charityName: null == charityName
+                ? _value.charityName
+                : charityName // ignore: cast_nullable_to_non_nullable
+                      as String,
             title: null == title
                 ? _value.title
                 : title // ignore: cast_nullable_to_non_nullable
                       as String,
-            summary: null == summary
-                ? _value.summary
-                : summary // ignore: cast_nullable_to_non_nullable
+            description: null == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
                       as String,
-            organizationName: null == organizationName
-                ? _value.organizationName
-                : organizationName // ignore: cast_nullable_to_non_nullable
+            imageUrl: null == imageUrl
+                ? _value.imageUrl
+                : imageUrl // ignore: cast_nullable_to_non_nullable
                       as String,
-            goalAmount: null == goalAmount
-                ? _value.goalAmount
-                : goalAmount // ignore: cast_nullable_to_non_nullable
+            targetAmount: null == targetAmount
+                ? _value.targetAmount
+                : targetAmount // ignore: cast_nullable_to_non_nullable
                       as double,
             currentAmount: null == currentAmount
                 ? _value.currentAmount
                 : currentAmount // ignore: cast_nullable_to_non_nullable
                       as double,
-            endDateIso: null == endDateIso
-                ? _value.endDateIso
-                : endDateIso // ignore: cast_nullable_to_non_nullable
-                      as String,
-            isActive: null == isActive
-                ? _value.isActive
-                : isActive // ignore: cast_nullable_to_non_nullable
-                      as bool,
+            donorCount: null == donorCount
+                ? _value.donorCount
+                : donorCount // ignore: cast_nullable_to_non_nullable
+                      as int,
+            startDate: null == startDate
+                ? _value.startDate
+                : startDate // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            endDate: null == endDate
+                ? _value.endDate
+                : endDate // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            updatedAt: null == updatedAt
+                ? _value.updatedAt
+                : updatedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            status: null == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                      as CampaignStatus,
             category: null == category
                 ? _value.category
                 : category // ignore: cast_nullable_to_non_nullable
                       as CampaignCategory,
-            description: freezed == description
-                ? _value.description
-                : description // ignore: cast_nullable_to_non_nullable
-                      as String?,
             location: freezed == location
                 ? _value.location
                 : location // ignore: cast_nullable_to_non_nullable
                       as String?,
-            imageUrl: freezed == imageUrl
-                ? _value.imageUrl
-                : imageUrl // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            donorCount: freezed == donorCount
-                ? _value.donorCount
-                : donorCount // ignore: cast_nullable_to_non_nullable
-                      as int?,
           )
           as $Val,
     );
@@ -169,19 +188,21 @@ abstract class _$$CampaignImplCopyWith<$Res>
   @useResult
   $Res call({
     String id,
+    String charityId,
+    String charityName,
     String title,
-    String summary,
-    String organizationName,
-    double goalAmount,
+    String description,
+    String imageUrl,
+    double targetAmount,
     double currentAmount,
-    String endDateIso,
-    bool isActive,
-    @JsonKey(unknownEnumValue: CampaignCategory.emergency)
+    int donorCount,
+    DateTime startDate,
+    DateTime endDate,
+    DateTime createdAt,
+    DateTime updatedAt,
+    CampaignStatus status,
     CampaignCategory category,
-    String? description,
     String? location,
-    String? imageUrl,
-    int? donorCount,
   });
 }
 
@@ -200,18 +221,21 @@ class __$$CampaignImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? charityId = null,
+    Object? charityName = null,
     Object? title = null,
-    Object? summary = null,
-    Object? organizationName = null,
-    Object? goalAmount = null,
+    Object? description = null,
+    Object? imageUrl = null,
+    Object? targetAmount = null,
     Object? currentAmount = null,
-    Object? endDateIso = null,
-    Object? isActive = null,
+    Object? donorCount = null,
+    Object? startDate = null,
+    Object? endDate = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
+    Object? status = null,
     Object? category = null,
-    Object? description = freezed,
     Object? location = freezed,
-    Object? imageUrl = freezed,
-    Object? donorCount = freezed,
   }) {
     return _then(
       _$CampaignImpl(
@@ -219,54 +243,66 @@ class __$$CampaignImplCopyWithImpl<$Res>
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
                   as String,
+        charityId: null == charityId
+            ? _value.charityId
+            : charityId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        charityName: null == charityName
+            ? _value.charityName
+            : charityName // ignore: cast_nullable_to_non_nullable
+                  as String,
         title: null == title
             ? _value.title
             : title // ignore: cast_nullable_to_non_nullable
                   as String,
-        summary: null == summary
-            ? _value.summary
-            : summary // ignore: cast_nullable_to_non_nullable
+        description: null == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
                   as String,
-        organizationName: null == organizationName
-            ? _value.organizationName
-            : organizationName // ignore: cast_nullable_to_non_nullable
+        imageUrl: null == imageUrl
+            ? _value.imageUrl
+            : imageUrl // ignore: cast_nullable_to_non_nullable
                   as String,
-        goalAmount: null == goalAmount
-            ? _value.goalAmount
-            : goalAmount // ignore: cast_nullable_to_non_nullable
+        targetAmount: null == targetAmount
+            ? _value.targetAmount
+            : targetAmount // ignore: cast_nullable_to_non_nullable
                   as double,
         currentAmount: null == currentAmount
             ? _value.currentAmount
             : currentAmount // ignore: cast_nullable_to_non_nullable
                   as double,
-        endDateIso: null == endDateIso
-            ? _value.endDateIso
-            : endDateIso // ignore: cast_nullable_to_non_nullable
-                  as String,
-        isActive: null == isActive
-            ? _value.isActive
-            : isActive // ignore: cast_nullable_to_non_nullable
-                  as bool,
+        donorCount: null == donorCount
+            ? _value.donorCount
+            : donorCount // ignore: cast_nullable_to_non_nullable
+                  as int,
+        startDate: null == startDate
+            ? _value.startDate
+            : startDate // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        endDate: null == endDate
+            ? _value.endDate
+            : endDate // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        updatedAt: null == updatedAt
+            ? _value.updatedAt
+            : updatedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        status: null == status
+            ? _value.status
+            : status // ignore: cast_nullable_to_non_nullable
+                  as CampaignStatus,
         category: null == category
             ? _value.category
             : category // ignore: cast_nullable_to_non_nullable
                   as CampaignCategory,
-        description: freezed == description
-            ? _value.description
-            : description // ignore: cast_nullable_to_non_nullable
-                  as String?,
         location: freezed == location
             ? _value.location
             : location // ignore: cast_nullable_to_non_nullable
                   as String?,
-        imageUrl: freezed == imageUrl
-            ? _value.imageUrl
-            : imageUrl // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        donorCount: freezed == donorCount
-            ? _value.donorCount
-            : donorCount // ignore: cast_nullable_to_non_nullable
-                  as int?,
       ),
     );
   }
@@ -277,19 +313,21 @@ class __$$CampaignImplCopyWithImpl<$Res>
 class _$CampaignImpl extends _Campaign {
   const _$CampaignImpl({
     required this.id,
+    required this.charityId,
+    required this.charityName,
     required this.title,
-    required this.summary,
-    required this.organizationName,
-    required this.goalAmount,
+    required this.description,
+    required this.imageUrl,
+    required this.targetAmount,
     required this.currentAmount,
-    required this.endDateIso,
-    required this.isActive,
-    @JsonKey(unknownEnumValue: CampaignCategory.emergency)
+    required this.donorCount,
+    required this.startDate,
+    required this.endDate,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.status,
     required this.category,
-    this.description,
     this.location,
-    this.imageUrl,
-    this.donorCount,
   }) : super._();
 
   factory _$CampaignImpl.fromJson(Map<String, dynamic> json) =>
@@ -298,34 +336,39 @@ class _$CampaignImpl extends _Campaign {
   @override
   final String id;
   @override
+  final String charityId;
+  @override
+  final String charityName;
+  @override
   final String title;
   @override
-  final String summary;
+  final String description;
   @override
-  final String organizationName;
+  final String imageUrl;
   @override
-  final double goalAmount;
+  final double targetAmount;
   @override
   final double currentAmount;
   @override
-  final String endDateIso;
+  final int donorCount;
   @override
-  final bool isActive;
+  final DateTime startDate;
   @override
-  @JsonKey(unknownEnumValue: CampaignCategory.emergency)
+  final DateTime endDate;
+  @override
+  final DateTime createdAt;
+  @override
+  final DateTime updatedAt;
+  @override
+  final CampaignStatus status;
+  @override
   final CampaignCategory category;
   @override
-  final String? description;
-  @override
   final String? location;
-  @override
-  final String? imageUrl;
-  @override
-  final int? donorCount;
 
   @override
   String toString() {
-    return 'Campaign(id: $id, title: $title, summary: $summary, organizationName: $organizationName, goalAmount: $goalAmount, currentAmount: $currentAmount, endDateIso: $endDateIso, isActive: $isActive, category: $category, description: $description, location: $location, imageUrl: $imageUrl, donorCount: $donorCount)';
+    return 'Campaign(id: $id, charityId: $charityId, charityName: $charityName, title: $title, description: $description, imageUrl: $imageUrl, targetAmount: $targetAmount, currentAmount: $currentAmount, donorCount: $donorCount, startDate: $startDate, endDate: $endDate, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, category: $category, location: $location)';
   }
 
   @override
@@ -334,28 +377,33 @@ class _$CampaignImpl extends _Campaign {
         (other.runtimeType == runtimeType &&
             other is _$CampaignImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.charityId, charityId) ||
+                other.charityId == charityId) &&
+            (identical(other.charityName, charityName) ||
+                other.charityName == charityName) &&
             (identical(other.title, title) || other.title == title) &&
-            (identical(other.summary, summary) || other.summary == summary) &&
-            (identical(other.organizationName, organizationName) ||
-                other.organizationName == organizationName) &&
-            (identical(other.goalAmount, goalAmount) ||
-                other.goalAmount == goalAmount) &&
-            (identical(other.currentAmount, currentAmount) ||
-                other.currentAmount == currentAmount) &&
-            (identical(other.endDateIso, endDateIso) ||
-                other.endDateIso == endDateIso) &&
-            (identical(other.isActive, isActive) ||
-                other.isActive == isActive) &&
-            (identical(other.category, category) ||
-                other.category == category) &&
             (identical(other.description, description) ||
                 other.description == description) &&
-            (identical(other.location, location) ||
-                other.location == location) &&
             (identical(other.imageUrl, imageUrl) ||
                 other.imageUrl == imageUrl) &&
+            (identical(other.targetAmount, targetAmount) ||
+                other.targetAmount == targetAmount) &&
+            (identical(other.currentAmount, currentAmount) ||
+                other.currentAmount == currentAmount) &&
             (identical(other.donorCount, donorCount) ||
-                other.donorCount == donorCount));
+                other.donorCount == donorCount) &&
+            (identical(other.startDate, startDate) ||
+                other.startDate == startDate) &&
+            (identical(other.endDate, endDate) || other.endDate == endDate) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.category, category) ||
+                other.category == category) &&
+            (identical(other.location, location) ||
+                other.location == location));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -363,18 +411,21 @@ class _$CampaignImpl extends _Campaign {
   int get hashCode => Object.hash(
     runtimeType,
     id,
+    charityId,
+    charityName,
     title,
-    summary,
-    organizationName,
-    goalAmount,
-    currentAmount,
-    endDateIso,
-    isActive,
-    category,
     description,
-    location,
     imageUrl,
+    targetAmount,
+    currentAmount,
     donorCount,
+    startDate,
+    endDate,
+    createdAt,
+    updatedAt,
+    status,
+    category,
+    location,
   );
 
   /// Create a copy of Campaign
@@ -394,19 +445,21 @@ class _$CampaignImpl extends _Campaign {
 abstract class _Campaign extends Campaign {
   const factory _Campaign({
     required final String id,
+    required final String charityId,
+    required final String charityName,
     required final String title,
-    required final String summary,
-    required final String organizationName,
-    required final double goalAmount,
+    required final String description,
+    required final String imageUrl,
+    required final double targetAmount,
     required final double currentAmount,
-    required final String endDateIso,
-    required final bool isActive,
-    @JsonKey(unknownEnumValue: CampaignCategory.emergency)
+    required final int donorCount,
+    required final DateTime startDate,
+    required final DateTime endDate,
+    required final DateTime createdAt,
+    required final DateTime updatedAt,
+    required final CampaignStatus status,
     required final CampaignCategory category,
-    final String? description,
     final String? location,
-    final String? imageUrl,
-    final int? donorCount,
   }) = _$CampaignImpl;
   const _Campaign._() : super._();
 
@@ -416,30 +469,35 @@ abstract class _Campaign extends Campaign {
   @override
   String get id;
   @override
+  String get charityId;
+  @override
+  String get charityName;
+  @override
   String get title;
   @override
-  String get summary;
+  String get description;
   @override
-  String get organizationName;
+  String get imageUrl;
   @override
-  double get goalAmount;
+  double get targetAmount;
   @override
   double get currentAmount;
   @override
-  String get endDateIso;
+  int get donorCount;
   @override
-  bool get isActive;
+  DateTime get startDate;
   @override
-  @JsonKey(unknownEnumValue: CampaignCategory.emergency)
+  DateTime get endDate;
+  @override
+  DateTime get createdAt;
+  @override
+  DateTime get updatedAt;
+  @override
+  CampaignStatus get status;
+  @override
   CampaignCategory get category;
   @override
-  String? get description;
-  @override
   String? get location;
-  @override
-  String? get imageUrl;
-  @override
-  int? get donorCount;
 
   /// Create a copy of Campaign
   /// with the given fields replaced by the non-null parameter values.

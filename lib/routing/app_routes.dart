@@ -10,10 +10,15 @@ class AppRoutes {
 
   static const campaigns = '/campaigns';
   static const campaignDetailPattern = '/campaigns/:campaignId';
+  static const followedCampaigns = '/followed-campaigns';
+  static const myCampaigns = '/my-campaigns';
+  static const createCampaign = '/campaigns/create';
+  static const editCampaignPattern = '/campaigns/:campaignId/edit';
   static const donations = '/donations';
   static const notifications = '/notifications';
   static const profile = '/profile';
   static const charityDashboard = '/charity-dashboard';
 
   static String campaignDetail(String campaignId) => '/campaigns/$campaignId';
+  static String editCampaign(String campaignId) => '/campaigns/$campaignId/edit';
 }

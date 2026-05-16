@@ -9,10 +9,9 @@ class CampaignFormatters {
     return '$scaled%';
   }
 
-  static String shortDate(String iso) {
-    if (iso.length >= 10) {
-      return iso.substring(0, 10);
-    }
-    return iso;
+  static String shortDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
   }
 }
