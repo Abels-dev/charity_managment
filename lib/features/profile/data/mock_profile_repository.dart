@@ -1,11 +1,79 @@
-import 'package:charity_managment/models/user_profile.dart';
+import 'package:charity_managment/features/profile/data/local/profile_local_storage.dart';
+import 'package:charity_managment/features/profile/domain/models/charity_profile_update_input.dart';
+import 'package:charity_managment/features/profile/domain/models/profile_data.dart';
+import 'package:charity_managment/features/profile/domain/models/profile_role.dart';
+import 'package:charity_managment/features/profile/domain/models/user_profile_update_input.dart';
 import 'package:charity_managment/repositories/profile_repository.dart';
-import 'package:charity_managment/shared/mock_data/mock_users.dart';
 
 class MockProfileRepository implements ProfileRepository {
+  MockProfileRepository(
+    this._localStorage, {
+    required this.role,
+    required ProfileData seedProfile,
+  }) : _seedProfile = seedProfile;
+
+  final ProfileLocalStorage _localStorage;
+  final ProfileRole role;
+  final ProfileData _seedProfile;
+
   @override
-  Future<UserProfile> fetchMyProfile() async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-    return donorUser;
+  Future<ProfileData> getCurrentUserProfile() async {
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+
+    final stored = await _localStorage.readProfile(role);
+    if (stored != null) return stored;
+
+    await _localStorage.saveProfile(role, _seedProfile);
+    return _seedProfile;
+  }
+
+  @override
+  Future<ProfileData> updateUserProfile(UserProfileUpdateInput input) async {
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+
+    final current = await getCurrentUserProfile();
+    final updatedUser = current.user.copyWith(
+      name: input.name,
+      phone: input.phone,
+      bio: input.bio,
+      updatedAt: DateTime.now(),
+    );
+
+    final updatedProfile = current.copyWith(user: updatedUser);
+    await _localStorage.saveProfile(role, updatedProfile);
+    return updatedProfile;
+  }
+
+  @override
+  Future<ProfileData> updateCharityProfile(
+    CharityProfileUpdateInput input,
+  ) async {
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+
+    final current = await getCurrentUserProfile();
+    final existing = current.charityProfile;
+    if (existing == null) {
+      throw StateError('Charity profile not found for this account.');
+    }
+
+    final updatedCharity = existing.copyWith(
+      organizationName: input.organizationName,
+      description: input.description,
+      phone: input.phone,
+      website: input.website,
+      address: input.address,
+    );
+
+    final updatedUser = current.user.copyWith(
+      name: input.organizationName,
+      updatedAt: DateTime.now(),
+    );
+
+    final updatedProfile = current.copyWith(
+      user: updatedUser,
+      charityProfile: updatedCharity,
+    );
+    await _localStorage.saveProfile(role, updatedProfile);
+    return updatedProfile;
   }
 }

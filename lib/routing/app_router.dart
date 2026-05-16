@@ -18,6 +18,7 @@ import 'package:charity_managment/features/campaigns/presentation/screens/my_cam
 import 'package:charity_managment/features/charity_dashboard/presentation/screens/charity_dashboard_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donations_screen.dart';
 import 'package:charity_managment/features/notifications/presentation/screens/notifications_screen.dart';
+import 'package:charity_managment/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:charity_managment/features/profile/presentation/screens/profile_screen.dart';
 import 'package:charity_managment/models/user_role.dart';
 import 'package:charity_managment/routing/app_routes.dart';
@@ -99,6 +100,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
+        path: AppRoutes.editProfile,
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.charityDashboard,
         builder: (context, state) => const CharityDashboardScreen(),
       ),
@@ -170,6 +175,7 @@ const _protectedRoutes = {
   AppRoutes.donations,
   AppRoutes.notifications,
   AppRoutes.profile,
+  AppRoutes.editProfile,
   AppRoutes.charityDashboard,
 };
 
