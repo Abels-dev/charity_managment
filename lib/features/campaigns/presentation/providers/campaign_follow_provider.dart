@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/followed_campaigns_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_repository_provider.dart';
+import 'package:charity_managment/features/notifications/data/notification_followers_registry.dart';
 
 class CampaignFollowController extends StateNotifier<AsyncValue<Set<String>>> {
   CampaignFollowController(this._ref) : super(const AsyncValue.loading()) {
@@ -15,6 +17,20 @@ class CampaignFollowController extends StateNotifier<AsyncValue<Set<String>>> {
       final repository = _ref.read(campaignRepositoryProvider);
       final ids = await repository.getFollowedCampaignIds();
       state = AsyncValue.data(ids);
+
+      final user = _ref.read(authControllerProvider).user;
+      if (user != null) {
+        for (final campaignId in ids) {
+          final campaign = await repository.getCampaignById(campaignId);
+          if (campaign != null) {
+            NotificationFollowersRegistry.followCampaign(
+              userId: user.id,
+              campaignId: campaignId,
+              charityId: campaign.charityId,
+            );
+          }
+        }
+      }
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
     }
@@ -22,6 +38,7 @@ class CampaignFollowController extends StateNotifier<AsyncValue<Set<String>>> {
 
   Future<void> toggleFollow(String campaignId) async {
     final repository = _ref.read(campaignRepositoryProvider);
+    final user = _ref.read(authControllerProvider).user;
     final current = state.valueOrNull ?? <String>{};
     final shouldFollow = !current.contains(campaignId);
 
@@ -39,6 +56,22 @@ class CampaignFollowController extends StateNotifier<AsyncValue<Set<String>>> {
         campaignId: campaignId,
         followed: shouldFollow,
       );
+      final campaign = await repository.getCampaignById(campaignId);
+      if (user != null && campaign != null) {
+        if (shouldFollow) {
+          NotificationFollowersRegistry.followCampaign(
+            userId: user.id,
+            campaignId: campaignId,
+            charityId: campaign.charityId,
+          );
+        } else {
+          NotificationFollowersRegistry.unfollowCampaign(
+            userId: user.id,
+            campaignId: campaignId,
+            charityId: campaign.charityId,
+          );
+        }
+      }
       _ref.invalidate(followedCampaignsProvider);
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);

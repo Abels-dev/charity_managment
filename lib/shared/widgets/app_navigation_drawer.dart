@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:charity_managment/features/notifications/presentation/providers/notification_unread_count_provider.dart';
 import 'package:charity_managment/models/user_role.dart';
 import 'package:charity_managment/routing/app_routes.dart';
 
@@ -44,6 +45,7 @@ class AppNavigationDrawer extends ConsumerWidget {
               ),
             ListTile(
               title: const Text('Notifications'),
+              trailing: _NotificationBadge(),
               onTap: () => context.go(AppRoutes.notifications),
             ),
             ListTile(
@@ -66,6 +68,35 @@ class AppNavigationDrawer extends ConsumerWidget {
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationBadge extends ConsumerWidget {
+  const _NotificationBadge();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unreadAsync = ref.watch(notificationUnreadCountProvider);
+    final unreadCount = unreadAsync.valueOrNull ?? 0;
+    if (unreadCount == 0) return const SizedBox.shrink();
+
+    final colorScheme = Theme.of(context).colorScheme;
+    final label = unreadCount > 99 ? '99+' : unreadCount.toString();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: colorScheme.error,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: colorScheme.onError,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

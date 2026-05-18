@@ -38,7 +38,7 @@ class DonationsScreen extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 12),
             itemCount: donations.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (_, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final donation = donations[index];
               return _DonationCardTile(donation: donation);
@@ -65,7 +65,7 @@ class _DonationCardTile extends ConsumerWidget {
     return DonationCard(
       donation: donation,
       campaignTitle: title,
-      onTap: () => context.go(AppRoutes.donationDetail(donation.id)),
+      onTap: () => context.go(AppRoutes.donationReceipt(donation.id)),
     );
   }
 }

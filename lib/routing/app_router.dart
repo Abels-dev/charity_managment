@@ -18,6 +18,8 @@ import 'package:charity_managment/features/campaigns/presentation/screens/my_cam
 import 'package:charity_managment/features/charity_dashboard/presentation/screens/charity_dashboard_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donations_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donation_detail_screen.dart';
+import 'package:charity_managment/features/donations/presentation/screens/donation_success_screen.dart';
+import 'package:charity_managment/features/donations/presentation/screens/donation_receipt_screen.dart';
 import 'package:charity_managment/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:charity_managment/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:charity_managment/features/profile/presentation/screens/profile_screen.dart';
@@ -97,6 +99,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final donationId = state.pathParameters['donationId']!;
           return DonationDetailScreen(donationId: donationId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.donationSuccessPattern,
+        builder: (context, state) {
+          final donationId = state.pathParameters['donationId']!;
+          return DonationSuccessScreen(donationId: donationId);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.donationReceiptPattern,
+        builder: (context, state) {
+          final donationId = state.pathParameters['donationId']!;
+          return DonationReceiptScreen(donationId: donationId);
         },
       ),
       GoRoute(

@@ -5,6 +5,11 @@ import 'package:charity_managment/features/campaigns/domain/campaign_create_inpu
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_repository_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaigns_list_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/my_campaigns_provider.dart';
+import 'package:charity_managment/features/notifications/data/notification_followers_registry.dart';
+import 'package:charity_managment/features/notifications/domain/notification_factory.dart';
+import 'package:charity_managment/features/notifications/presentation/providers/notification_repository_provider.dart';
+import 'package:charity_managment/features/notifications/presentation/providers/notification_unread_count_provider.dart';
+import 'package:charity_managment/features/notifications/presentation/providers/notifications_list_provider.dart';
 import 'package:charity_managment/models/campaign.dart';
 
 class CreateCampaignController extends StateNotifier<AsyncValue<Campaign?>> {
@@ -45,6 +50,22 @@ class CreateCampaignController extends StateNotifier<AsyncValue<Campaign?>> {
 
       _ref.invalidate(myCampaignsProvider);
       _ref.invalidate(campaignsListProvider);
+
+      final followers = NotificationFollowersRegistry.followersForCharity(campaign.charityId);
+      if (followers.isNotEmpty) {
+        final notificationRepository = _ref.read(notificationRepositoryProvider);
+        for (final followerId in followers) {
+          await notificationRepository.createNotification(
+            NotificationFactory.newCampaignFromFollowedCharity(
+              userId: followerId,
+              campaign: campaign,
+            ),
+          );
+        }
+        _ref.invalidate(notificationsListProvider);
+        _ref.invalidate(notificationUnreadCountProvider);
+      }
+
       state = AsyncValue.data(campaign);
       return campaign;
     } catch (error, stackTrace) {

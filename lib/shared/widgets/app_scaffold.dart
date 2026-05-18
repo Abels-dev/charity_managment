@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppScaffold extends StatelessWidget {
+import 'package:charity_managment/shared/widgets/notification_bell_action.dart';
+
+class AppScaffold extends ConsumerWidget {
   const AppScaffold({
     super.key,
     required this.title,
@@ -8,6 +11,7 @@ class AppScaffold extends StatelessWidget {
     this.actions,
     this.floatingActionButton,
     this.drawer,
+    this.showNotificationAction = true,
   });
 
   final String title;
@@ -15,13 +19,19 @@ class AppScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? floatingActionButton;
   final Widget? drawer;
+  final bool showNotificationAction;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mergedActions = <Widget>[
+      if (actions != null) ...actions!,
+      if (showNotificationAction) const NotificationBellAction(),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
-        actions: actions,
+        actions: mergedActions.isEmpty ? null : mergedActions,
       ),
       drawer: drawer,
       body: SafeArea(

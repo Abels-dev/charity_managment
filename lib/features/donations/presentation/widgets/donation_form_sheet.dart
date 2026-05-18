@@ -5,6 +5,7 @@ import 'package:charity_managment/features/authentication/presentation/providers
 import 'package:charity_managment/features/donations/domain/donation_create_input.dart';
 import 'package:charity_managment/features/donations/presentation/providers/donation_submission_provider.dart';
 import 'package:charity_managment/models/campaign.dart';
+import 'package:charity_managment/models/donation.dart';
 
 class DonationFormSheet extends ConsumerStatefulWidget {
   const DonationFormSheet({
@@ -14,7 +15,7 @@ class DonationFormSheet extends ConsumerStatefulWidget {
   });
 
   final Campaign campaign;
-  final VoidCallback? onSuccess;
+  final ValueChanged<String>? onSuccess;
 
   @override
   ConsumerState<DonationFormSheet> createState() => _DonationFormSheetState();
@@ -24,6 +25,7 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _amountController;
   late final TextEditingController _messageController;
+  late final ProviderSubscription<AsyncValue<Donation?>> _submissionSub;
   bool _isAnonymous = false;
 
   @override
@@ -32,31 +34,33 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
     _amountController = TextEditingController();
     _messageController = TextEditingController();
 
-    ref.listen<AsyncValue>(donationSubmissionProvider, (previous, next) {
-      if (next.hasError) {
-        final message = next.error.toString();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-      }
-
-      if (next.hasValue && next.value != null) {
-        widget.onSuccess?.call();
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
+    _submissionSub = ref.listenManual<AsyncValue<Donation?>>(
+      donationSubmissionProvider,
+      (previous, next) {
+        if (next.hasError) {
+          if (!mounted) return;
+          final message = next.error.toString();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Donation completed successfully.')),
-        );
-      }
-    });
+
+        if (next.hasValue && next.value != null) {
+          if (!mounted) return;
+          widget.onSuccess?.call(next.value!.id);
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
+    _submissionSub.close();
     _amountController.dispose();
     _messageController.dispose();
-    ref.read(donationSubmissionProvider.notifier).clear();
     super.dispose();
   }
 

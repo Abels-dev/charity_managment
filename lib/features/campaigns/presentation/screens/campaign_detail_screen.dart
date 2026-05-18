@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_detail_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_follow_provider.dart';
@@ -7,6 +8,7 @@ import 'package:charity_managment/features/campaigns/presentation/utils/campaign
 import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_status_badge.dart';
 import 'package:charity_managment/features/donations/presentation/widgets/donation_form_sheet.dart';
 import 'package:charity_managment/models/campaign.dart';
+import 'package:charity_managment/routing/app_routes.dart';
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
 import 'package:charity_managment/shared/widgets/empty_state.dart';
@@ -92,7 +94,12 @@ class CampaignDetailScreen extends ConsumerWidget {
                           context: context,
                           isScrollControlled: true,
                           showDragHandle: true,
-                          builder: (_) => DonationFormSheet(campaign: campaign),
+                          builder: (_) => DonationFormSheet(
+                            campaign: campaign,
+                            onSuccess: (donationId) {
+                              context.go(AppRoutes.donationSuccess(donationId));
+                            },
+                          ),
                         );
                       },
                 child: const Text('Donate'),

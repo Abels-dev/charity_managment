@@ -1,17 +1,24 @@
 import 'package:charity_managment/models/app_notification.dart';
 
-const mockNotifications = [
+final mockNotifications = [
   AppNotification(
     id: 'ntf_001',
+    userId: 'user_12345',
     title: 'Thank you for donating',
-    body: 'Your donation to School Kits for Rural Children was received.',
-    createdAtIso: '2026-05-14T08:00:00Z',
+    message: 'Your donation to School Kits for Rural Children was received.',
+    isRead: false,
+    createdAt: DateTime(2026, 5, 14, 8),
+    targetType: NotificationTargetType.donation,
+    targetId: 'dn_001',
   ),
   AppNotification(
     id: 'ntf_002',
+    userId: 'user_12345',
     title: 'Campaign milestone reached',
-    body: 'School Kits for Rural Children reached 60% of its goal.',
-    createdAtIso: '2026-05-11T18:30:00Z',
-    readAtIso: '2026-05-12T08:00:00Z',
+    message: 'School Kits for Rural Children reached 60% of its goal.',
+    isRead: true,
+    createdAt: DateTime(2026, 5, 11, 18, 30),
+    targetType: NotificationTargetType.campaign,
+    targetId: 'cmp_001',
   ),
 ];

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_detail_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/utils/campaign_formatters.dart';
 import 'package:charity_managment/features/donations/presentation/providers/donation_detail_provider.dart';
 import 'package:charity_managment/models/donation.dart';
+import 'package:charity_managment/routing/app_routes.dart';
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
 import 'package:charity_managment/shared/widgets/empty_state.dart';
@@ -97,6 +99,11 @@ class _DonationDetailBody extends ConsumerWidget {
             label: 'Message',
             value: donation.message!,
           ),
+        const SizedBox(height: 16),
+        FilledButton(
+          onPressed: () => context.go(AppRoutes.donationReceipt(donation.id)),
+          child: const Text('View Receipt'),
+        ),
       ],
     );
   }

@@ -1,9 +1,11 @@
 import 'package:charity_managment/models/donation.dart';
+import 'package:charity_managment/models/donation_receipt.dart';
 import 'package:charity_managment/repositories/donation_repository.dart';
 import 'package:charity_managment/shared/mock_data/mock_donations.dart';
 
 class MockDonationRepository implements DonationRepository {
   static final List<Donation> _donations = List<Donation>.from(mockDonations);
+  static final Map<String, DonationReceipt> _receipts = _seedReceipts();
 
   @override
   Future<Donation> createDonation(Donation donation) async {
@@ -35,5 +37,47 @@ class MockDonationRepository implements DonationRepository {
     }
 
     return null;
+  }
+
+  @override
+  Future<DonationReceipt> generateReceipt(Donation donation) async {
+    await Future<void>.delayed(const Duration(milliseconds: 240));
+
+    final existing = _receipts[donation.id];
+    if (existing != null) {
+      return existing;
+    }
+
+    final receipt = DonationReceipt(
+      id: 'rct_${donation.id}',
+      donationId: donation.id,
+      reference: _referenceFor(donation.id),
+      issuedAt: DateTime.now(),
+    );
+    _receipts[donation.id] = receipt;
+    return receipt;
+  }
+
+  @override
+  Future<DonationReceipt?> getReceiptByDonationId(String donationId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 180));
+    return _receipts[donationId];
+  }
+
+  static Map<String, DonationReceipt> _seedReceipts() {
+    final receipts = <String, DonationReceipt>{};
+    for (final donation in _donations) {
+      receipts[donation.id] = DonationReceipt(
+        id: 'rct_${donation.id}',
+        donationId: donation.id,
+        reference: _referenceFor(donation.id),
+        issuedAt: donation.donatedAt,
+      );
+    }
+    return receipts;
+  }
+
+  static String _referenceFor(String donationId) {
+    return 'RCT-${donationId.toUpperCase()}';
   }
 }
