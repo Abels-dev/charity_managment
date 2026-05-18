@@ -5,6 +5,7 @@ import 'package:charity_managment/features/campaigns/presentation/providers/camp
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_follow_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/utils/campaign_formatters.dart';
 import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_status_badge.dart';
+import 'package:charity_managment/features/donations/presentation/widgets/donation_form_sheet.dart';
 import 'package:charity_managment/models/campaign.dart';
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
@@ -87,10 +88,13 @@ class CampaignDetailScreen extends ConsumerWidget {
                 onPressed: campaign.status == CampaignStatus.closed
                     ? null
                     : () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Donation flow will be added soon.')),
-                  );
-                },
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          showDragHandle: true,
+                          builder: (_) => DonationFormSheet(campaign: campaign),
+                        );
+                      },
                 child: const Text('Donate'),
               ),
               const SizedBox(height: 10),

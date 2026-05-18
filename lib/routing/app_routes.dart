@@ -15,6 +15,7 @@ class AppRoutes {
   static const createCampaign = '/campaigns/create';
   static const editCampaignPattern = '/campaigns/:campaignId/edit';
   static const donations = '/donations';
+  static const donationDetailPattern = '/donations/:donationId';
   static const notifications = '/notifications';
   static const profile = '/profile';
   static const editProfile = '/profile/edit';
@@ -22,4 +23,5 @@ class AppRoutes {
 
   static String campaignDetail(String campaignId) => '/campaigns/$campaignId';
   static String editCampaign(String campaignId) => '/campaigns/$campaignId/edit';
+  static String donationDetail(String donationId) => '/donations/$donationId';
 }

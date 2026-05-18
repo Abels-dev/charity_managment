@@ -1,21 +1,25 @@
 import 'package:charity_managment/models/donation.dart';
 
-const mockDonations = [
+final mockDonations = [
   Donation(
     id: 'dn_001',
+    donorId: 'user_12345',
     campaignId: 'cmp_001',
-    donorId: 'u_donor_01',
     amount: 50,
-    currency: 'USD',
-    donatedAtIso: '2026-05-12T09:30:00Z',
+    isAnonymous: false,
     message: 'Happy to support this cause.',
+    transactionId: 'txn_001',
+    status: DonationStatus.completed,
+    donatedAt: DateTime(2026, 5, 12, 9, 30),
   ),
   Donation(
     id: 'dn_002',
+    donorId: 'user_12345',
     campaignId: 'cmp_002',
-    donorId: 'u_donor_01',
     amount: 20,
-    currency: 'USD',
-    donatedAtIso: '2026-05-13T12:15:00Z',
+    isAnonymous: true,
+    transactionId: 'txn_002',
+    status: DonationStatus.completed,
+    donatedAt: DateTime(2026, 5, 13, 12, 15),
   ),
 ];

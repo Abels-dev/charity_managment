@@ -37,10 +37,11 @@ class AppNavigationDrawer extends ConsumerWidget {
                 title: const Text('Create Campaign'),
                 onTap: () => context.go(AppRoutes.createCampaign),
               ),
-            ListTile(
-              title: const Text('Donations'),
-              onTap: () => context.go(AppRoutes.donations),
-            ),
+            if (auth.user?.role == UserRole.donor)
+              ListTile(
+                title: const Text('Donations'),
+                onTap: () => context.go(AppRoutes.donations),
+              ),
             ListTile(
               title: const Text('Notifications'),
               onTap: () => context.go(AppRoutes.notifications),

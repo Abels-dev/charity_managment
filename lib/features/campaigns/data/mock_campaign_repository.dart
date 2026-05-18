@@ -186,6 +186,29 @@ class MockCampaignRepository implements CampaignRepository {
     return closed;
   }
 
+  @override
+  Future<Campaign> applyDonation({
+    required String campaignId,
+    required double amount,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 180));
+
+    final index = _campaigns.indexWhere((campaign) => campaign.id == campaignId);
+    if (index < 0) {
+      throw StateError('Campaign not found.');
+    }
+
+    final current = _campaigns[index];
+    final updated = current.copyWith(
+      currentAmount: current.currentAmount + amount,
+      donorCount: current.donorCount + 1,
+      updatedAt: DateTime.now(),
+    );
+
+    _campaigns[index] = updated;
+    return updated;
+  }
+
   String _nextId() {
     final stamp = DateTime.now().millisecondsSinceEpoch;
     return 'cmp_$stamp';

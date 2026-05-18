@@ -26,4 +26,9 @@ abstract class CampaignRepository {
   Future<Campaign> updateCampaign(CampaignUpdateInput input);
 
   Future<Campaign> closeCampaign(String campaignId);
+
+  Future<Campaign> applyDonation({
+    required String campaignId,
+    required double amount,
+  });
 }
