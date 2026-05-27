@@ -237,7 +237,7 @@ bool _isCharityOnlyLocation(String location) {
 
 String _defaultRouteForRole(UserRole? role) {
   if (role == UserRole.charityOrganization) {
-    return AppRoutes.myCampaigns;
+    return AppRoutes.charityDashboard;
   }
   return AppRoutes.campaigns;
 }

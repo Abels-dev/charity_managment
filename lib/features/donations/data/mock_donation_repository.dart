@@ -27,6 +27,18 @@ class MockDonationRepository implements DonationRepository {
   }
 
   @override
+  Future<List<Donation>> getDonationsByCampaignIds(Set<String> campaignIds) async {
+    await Future<void>.delayed(const Duration(milliseconds: 280));
+
+    final results = _donations
+        .where((donation) => campaignIds.contains(donation.campaignId))
+        .toList(growable: false);
+
+    results.sort((a, b) => b.donatedAt.compareTo(a.donatedAt));
+    return results;
+  }
+
+  @override
   Future<Donation?> getDonationById(String donationId) async {
     await Future<void>.delayed(const Duration(milliseconds: 220));
 

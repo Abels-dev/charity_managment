@@ -6,6 +6,8 @@ abstract class DonationRepository {
 
   Future<List<Donation>> getDonationHistory(String donorId);
 
+  Future<List<Donation>> getDonationsByCampaignIds(Set<String> campaignIds);
+
   Future<Donation?> getDonationById(String donationId);
 
   Future<DonationReceipt> generateReceipt(Donation donation);
