@@ -16,6 +16,7 @@ import 'package:charity_managment/features/campaigns/presentation/screens/edit_c
 import 'package:charity_managment/features/campaigns/presentation/screens/followed_campaigns_screen.dart';
 import 'package:charity_managment/features/campaigns/presentation/screens/my_campaigns_screen.dart';
 import 'package:charity_managment/features/charity_dashboard/presentation/screens/charity_dashboard_screen.dart';
+import 'package:charity_managment/features/donations/presentation/screens/anonymous_donations_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donations_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donation_detail_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donation_success_screen.dart';
@@ -23,6 +24,10 @@ import 'package:charity_managment/features/donations/presentation/screens/donati
 import 'package:charity_managment/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:charity_managment/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:charity_managment/features/profile/presentation/screens/profile_screen.dart';
+import 'package:charity_managment/features/public_home/presentation/screens/public_home_screen.dart';
+import 'package:charity_managment/features/charities/presentation/screens/charity_public_profile_screen.dart';
+import 'package:charity_managment/features/charity_dashboard/presentation/screens/charity_contributions_screen.dart';
+import 'package:charity_managment/features/campaign_requests/presentation/screens/campaign_requests_screen.dart';
 import 'package:charity_managment/models/user_role.dart';
 import 'package:charity_managment/routing/app_routes.dart';
 
@@ -30,15 +35,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authControllerProvider);
 
   return GoRouter(
-    initialLocation: AppRoutes.root,
+    initialLocation: AppRoutes.splash,
     routes: [
       GoRoute(
         path: AppRoutes.root,
-        builder: (context, state) => const SplashScreen(),
+        builder: (context, state) => const PublicHomeScreen(),
       ),
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.charityProfilePattern,
+        builder: (context, state) {
+          final charityId = state.pathParameters['charityId']!;
+          return CharityPublicProfileScreen(charityId: charityId);
+        },
       ),
       GoRoute(
         path: AppRoutes.onboarding,
@@ -95,6 +107,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const DonationsScreen(),
       ),
       GoRoute(
+        path: AppRoutes.anonymousDonations,
+        builder: (context, state) => const AnonymousDonationsScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.donationDetailPattern,
         builder: (context, state) {
           final donationId = state.pathParameters['donationId']!;
@@ -131,10 +147,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.charityDashboard,
         builder: (context, state) => const CharityDashboardScreen(),
       ),
+      GoRoute(
+        path: AppRoutes.charityContributions,
+        builder: (context, state) => const CharityContributionsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.charityCampaignRequests,
+        builder: (context, state) => const CampaignRequestsScreen(),
+      ),
     ],
     redirect: (context, state) {
       final location = state.matchedLocation;
-      final isAuthRoute = _authRoutes.contains(location);
+      final isAuthFlowRoute = _authFlowRoutes.contains(location);
 
       if (auth.status == AuthStatus.bootstrapping) {
         return location == AppRoutes.splash ? null : AppRoutes.splash;
@@ -159,23 +183,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return AppRoutes.myCampaigns;
         }
 
-        if (isAuthRoute || location == AppRoutes.root) {
+        if (isAuthFlowRoute || location == AppRoutes.root) {
           return _defaultRouteForRole(role);
         }
 
         return null;
       }
 
-      if (!auth.onboardingSeen) {
+      if (location == AppRoutes.splash) {
+        return AppRoutes.root;
+      }
+
+      if (!auth.onboardingSeen && isAuthFlowRoute) {
         return location == AppRoutes.onboarding ? null : AppRoutes.onboarding;
       }
 
-      if (auth.selectedRole == null) {
+      if (auth.selectedRole == null && _requiresRoleSelection(location)) {
         return location == AppRoutes.roleSelection ? null : AppRoutes.roleSelection;
       }
 
       if (_isProtectedLocation(location) ||
-          location == AppRoutes.root ||
           location == AppRoutes.splash) {
         return AppRoutes.login;
       }
@@ -185,8 +212,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-const _authRoutes = {
-  AppRoutes.root,
+const _authFlowRoutes = {
   AppRoutes.splash,
   AppRoutes.onboarding,
   AppRoutes.roleSelection,
@@ -196,15 +222,17 @@ const _authRoutes = {
 };
 
 const _protectedRoutes = {
-  AppRoutes.campaigns,
   AppRoutes.followedCampaigns,
   AppRoutes.myCampaigns,
   AppRoutes.createCampaign,
   AppRoutes.donations,
+  AppRoutes.anonymousDonations,
   AppRoutes.notifications,
   AppRoutes.profile,
   AppRoutes.editProfile,
   AppRoutes.charityDashboard,
+  AppRoutes.charityContributions,
+  AppRoutes.charityCampaignRequests,
 };
 
 bool _isProtectedLocation(String location) {
@@ -212,15 +240,12 @@ bool _isProtectedLocation(String location) {
     return true;
   }
 
-  if (location.startsWith('${AppRoutes.campaigns}/')) {
-    return true;
-  }
-
   return location.startsWith('${AppRoutes.donations}/');
 }
 
 bool _isDonorOnlyLocation(String location) {
-  if (location == AppRoutes.donations) {
+  if (location == AppRoutes.donations ||
+      location == AppRoutes.anonymousDonations) {
     return true;
   }
 
@@ -228,11 +253,21 @@ bool _isDonorOnlyLocation(String location) {
 }
 
 bool _isCharityOnlyLocation(String location) {
-  if (location == AppRoutes.myCampaigns || location == AppRoutes.createCampaign) {
+  if (location == AppRoutes.myCampaigns ||
+      location == AppRoutes.createCampaign ||
+      location == AppRoutes.charityContributions ||
+      location == AppRoutes.charityCampaignRequests) {
     return true;
   }
 
   return location.endsWith('/edit');
+}
+
+bool _requiresRoleSelection(String location) {
+  if (location == AppRoutes.login || location == AppRoutes.register) {
+    return true;
+  }
+  return false;
 }
 
 String _defaultRouteForRole(UserRole? role) {

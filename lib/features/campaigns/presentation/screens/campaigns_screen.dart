@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_filters_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_follow_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaigns_list_provider.dart';
@@ -45,6 +46,7 @@ class _CampaignsScreenState extends ConsumerState<CampaignsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = ref.watch(authControllerProvider);
     final campaignsAsync = ref.watch(campaignsListProvider);
     final filters = ref.watch(campaignFiltersProvider);
     final filterController = ref.read(campaignFiltersProvider.notifier);
@@ -54,6 +56,7 @@ class _CampaignsScreenState extends ConsumerState<CampaignsScreen> {
     return AppScaffold(
       title: 'Campaigns',
       drawer: const AppNavigationDrawer(),
+      showNotificationAction: auth.isAuthenticated,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -120,7 +123,13 @@ class _CampaignsScreenState extends ConsumerState<CampaignsScreen> {
                         campaign: campaign,
                         isFollowed: isFollowed,
                         onTap: () => context.go(AppRoutes.campaignDetail(campaignId)),
-                        onFollowTap: () => followController.toggleFollow(campaignId),
+                        onFollowTap: () {
+                          if (!auth.isAuthenticated) {
+                            _promptSignIn(context);
+                            return;
+                          }
+                          followController.toggleFollow(campaignId);
+                        },
                       );
                     },
                   );
@@ -129,6 +138,18 @@ class _CampaignsScreenState extends ConsumerState<CampaignsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _promptSignIn(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Sign in to follow campaigns.'),
+        action: SnackBarAction(
+          label: 'Sign in',
+          onPressed: () => context.go(AppRoutes.roleSelection),
+        ),
       ),
     );
   }

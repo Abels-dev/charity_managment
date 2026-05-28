@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:charity_managment/features/notifications/presentation/providers/notification_unread_count_provider.dart';
 import 'package:charity_managment/routing/app_routes.dart';
 
@@ -10,6 +11,11 @@ class NotificationBellAction extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authControllerProvider);
+    if (!auth.isAuthenticated) {
+      return const SizedBox.shrink();
+    }
+
     final unreadAsync = ref.watch(notificationUnreadCountProvider);
     final unreadCount = unreadAsync.valueOrNull ?? 0;
 

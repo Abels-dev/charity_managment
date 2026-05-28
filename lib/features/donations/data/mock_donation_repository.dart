@@ -52,6 +52,34 @@ class MockDonationRepository implements DonationRepository {
   }
 
   @override
+  Future<Donation> setDonationAnonymous({
+    required String donationId,
+    required bool isAnonymous,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 180));
+
+    final index = _donations.indexWhere((donation) => donation.id == donationId);
+    if (index < 0) {
+      throw StateError('Donation not found.');
+    }
+
+    final updated = Donation(
+      id: _donations[index].id,
+      donorId: _donations[index].donorId,
+      campaignId: _donations[index].campaignId,
+      amount: _donations[index].amount,
+      isAnonymous: isAnonymous,
+      transactionId: _donations[index].transactionId,
+      status: _donations[index].status,
+      donatedAt: _donations[index].donatedAt,
+      message: _donations[index].message,
+    );
+
+    _donations[index] = updated;
+    return updated;
+  }
+
+  @override
   Future<DonationReceipt> generateReceipt(Donation donation) async {
     await Future<void>.delayed(const Duration(milliseconds: 240));
 

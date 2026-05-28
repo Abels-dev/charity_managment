@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_detail_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_follow_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/utils/campaign_formatters.dart';
@@ -23,11 +24,13 @@ class CampaignDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authControllerProvider);
     final detailAsync = ref.watch(campaignDetailProvider(campaignId));
 
     return AppScaffold(
       title: 'Campaign Detail',
       drawer: const AppNavigationDrawer(),
+      showNotificationAction: auth.isAuthenticated,
       body: detailAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => EmptyState(
@@ -52,7 +55,15 @@ class CampaignDetailScreen extends ConsumerWidget {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
-              Text('By ${campaign.organizationName}'),
+              TextButton(
+                onPressed: () => context.go(
+                  AppRoutes.charityProfile(campaign.charityId),
+                ),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('By ${campaign.organizationName}'),
+                ),
+              ),
               const SizedBox(height: 6),
               Row(
                 children: [
@@ -90,6 +101,10 @@ class CampaignDetailScreen extends ConsumerWidget {
                 onPressed: campaign.status == CampaignStatus.closed
                     ? null
                     : () {
+                        if (!auth.isAuthenticated) {
+                          _promptSignIn(context);
+                          return;
+                        }
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
@@ -106,13 +121,31 @@ class CampaignDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               OutlinedButton.icon(
-                onPressed: () => followController.toggleFollow(campaign.id),
+                onPressed: () {
+                  if (!auth.isAuthenticated) {
+                    _promptSignIn(context);
+                    return;
+                  }
+                  followController.toggleFollow(campaign.id);
+                },
                 icon: Icon(isFollowed ? Icons.favorite : Icons.favorite_border),
                 label: Text(isFollowed ? 'Following Campaign' : 'Follow Campaign'),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  void _promptSignIn(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Sign in to donate or follow campaigns.'),
+        action: SnackBarAction(
+          label: 'Sign in',
+          onPressed: () => context.go(AppRoutes.roleSelection),
+        ),
       ),
     );
   }

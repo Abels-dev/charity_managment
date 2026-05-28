@@ -10,6 +10,11 @@ abstract class DonationRepository {
 
   Future<Donation?> getDonationById(String donationId);
 
+  Future<Donation> setDonationAnonymous({
+    required String donationId,
+    required bool isAnonymous,
+  });
+
   Future<DonationReceipt> generateReceipt(Donation donation);
 
   Future<DonationReceipt?> getReceiptByDonationId(String donationId);

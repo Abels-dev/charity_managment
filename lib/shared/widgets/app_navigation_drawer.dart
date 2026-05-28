@@ -15,10 +15,17 @@ class AppNavigationDrawer extends ConsumerWidget {
     final auth = ref.watch(authControllerProvider);
     final authController = ref.read(authControllerProvider.notifier);
 
+    final isAuthenticated = auth.isAuthenticated;
+
     return Drawer(
       child: SafeArea(
         child: ListView(
           children: [
+            if (!isAuthenticated)
+              ListTile(
+                title: const Text('Home'),
+                onTap: () => context.go(AppRoutes.root),
+              ),
             ListTile(
               title: const Text('Campaigns'),
               onTap: () => context.go(AppRoutes.campaigns),
@@ -43,30 +50,58 @@ class AppNavigationDrawer extends ConsumerWidget {
                 title: const Text('Donations'),
                 onTap: () => context.go(AppRoutes.donations),
               ),
-            ListTile(
-              title: const Text('Notifications'),
-              trailing: _NotificationBadge(),
-              onTap: () => context.go(AppRoutes.notifications),
-            ),
-            ListTile(
-              title: const Text('Profile'),
-              onTap: () => context.go(AppRoutes.profile),
-            ),
+            if (auth.user?.role == UserRole.donor)
+              ListTile(
+                title: const Text('Anonymous Donations'),
+                onTap: () => context.go(AppRoutes.anonymousDonations),
+              ),
+            if (isAuthenticated)
+              ListTile(
+                title: const Text('Notifications'),
+                trailing: _NotificationBadge(),
+                onTap: () => context.go(AppRoutes.notifications),
+              ),
+            if (isAuthenticated)
+              ListTile(
+                title: const Text('Profile'),
+                onTap: () => context.go(AppRoutes.profile),
+              ),
             if (auth.user?.role == UserRole.charityOrganization)
               ListTile(
                 title: const Text('Charity Dashboard'),
                 onTap: () => context.go(AppRoutes.charityDashboard),
               ),
+            if (auth.user?.role == UserRole.charityOrganization)
+              ListTile(
+                title: const Text('Contributions'),
+                onTap: () => context.go(AppRoutes.charityContributions),
+              ),
+            if (auth.user?.role == UserRole.charityOrganization)
+              ListTile(
+                title: const Text('Campaign Requests'),
+                onTap: () => context.go(AppRoutes.charityCampaignRequests),
+              ),
             const Divider(),
-            ListTile(
-              title: const Text('Sign Out'),
-              onTap: () async {
-                await authController.logout();
-                if (context.mounted) {
-                  context.go(AppRoutes.login);
-                }
-              },
-            ),
+            if (isAuthenticated)
+              ListTile(
+                title: const Text('Sign Out'),
+                onTap: () async {
+                  await authController.logout();
+                  if (context.mounted) {
+                    context.go(AppRoutes.login);
+                  }
+                },
+              )
+            else ...[
+              ListTile(
+                title: const Text('Sign In'),
+                onTap: () => context.go(AppRoutes.login),
+              ),
+              ListTile(
+                title: const Text('Create Account'),
+                onTap: () => context.go(AppRoutes.roleSelection),
+              ),
+            ],
           ],
         ),
       ),
