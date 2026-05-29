@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:charity_managment/features/authentication/data/local/auth_local_storage.dart';
-import 'package:charity_managment/features/authentication/data/mock_auth_repository.dart';
 import 'package:charity_managment/features/authentication/domain/models/auth_failure.dart';
 import 'package:charity_managment/features/authentication/domain/models/auth_state.dart';
 import 'package:charity_managment/features/authentication/domain/models/auth_status.dart';
@@ -10,14 +9,24 @@ import 'package:charity_managment/features/authentication/domain/models/register
 import 'package:charity_managment/models/user_role.dart';
 import 'package:charity_managment/repositories/auth_repository.dart';
 
+import 'package:charity_managment/core/network/api_client.dart';
+import 'package:charity_managment/core/network/cookie_jar_provider.dart';
+import 'package:charity_managment/core/network/token_storage.dart';
+import 'package:charity_managment/features/authentication/data/api_auth_repository.dart';
+
 final authLocalStorageProvider = Provider<AuthLocalStorage>((ref) {
-  return AuthLocalStorage();
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return AuthLocalStorage(prefs);
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final storage = ref.watch(authLocalStorageProvider);
-  return MockAuthRepository(storage);
+  final dio = ref.watch(dioProvider);
+  final cookieJar = ref.watch(cookieJarProvider);
+  final tokenStorage = ref.watch(tokenStorageProvider);
+  return ApiAuthRepository(dio, storage, cookieJar, tokenStorage);
 });
+
 
 class AuthController extends StateNotifier<AuthState> {
   AuthController(this._repository) : super(AuthState.initial) {

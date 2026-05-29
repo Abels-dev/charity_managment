@@ -1,8 +1,11 @@
 import 'package:charity_managment/models/donation.dart';
 import 'package:charity_managment/models/donation_receipt.dart';
+import 'package:charity_managment/features/donations/domain/donation_checkout_session.dart';
 
 abstract class DonationRepository {
   Future<Donation> createDonation(Donation donation);
+
+  Future<DonationCheckoutSession> createDonationCheckout(Donation donation);
 
   Future<List<Donation>> getDonationHistory(String donorId);
 
@@ -14,6 +17,8 @@ abstract class DonationRepository {
     required String donationId,
     required bool isAnonymous,
   });
+
+  Future<Donation?> getDonationByTransactionRef(String txRef);
 
   Future<DonationReceipt> generateReceipt(Donation donation);
 

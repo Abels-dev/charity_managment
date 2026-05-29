@@ -1,14 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:charity_managment/features/charities/data/mock_charity_repository.dart';
 import 'package:charity_managment/features/charities/domain/charity_public_profile.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_repository_provider.dart';
 import 'package:charity_managment/models/charity_stats.dart';
 import 'package:charity_managment/models/campaign.dart';
 import 'package:charity_managment/repositories/charity_repository.dart';
 
+import 'package:charity_managment/core/network/api_client.dart';
+import 'package:charity_managment/features/charities/data/api_charity_repository.dart';
+
 final charityRepositoryProvider = Provider<CharityRepository>((ref) {
-  return MockCharityRepository();
+  final dio = ref.watch(dioProvider);
+  return ApiCharityRepository(dio);
+});
+
+final myCharityProfileProvider = FutureProvider<CharityPublicProfile?>((ref) async {
+  final repository = ref.watch(charityRepositoryProvider);
+  return repository.getMyProfile();
 });
 
 final charityPublicProfileProvider =
@@ -21,7 +29,11 @@ final charityPublicProfileProvider =
     return null;
   }
 
-  final campaigns = await campaignRepository.getMyCampaigns(charityId);
+  // Fetch public campaigns and filter by charity id so public profiles
+  // show the charity's campaigns (backend does not expose a dedicated
+  // public campaigns-by-charity endpoint).
+  final all = await campaignRepository.fetchCampaigns();
+  final campaigns = all.where((c) => c.charityId == charityId).toList(growable: false);
   final stats = _buildStats(campaigns);
 
   return CharityPublicProfileDetails(

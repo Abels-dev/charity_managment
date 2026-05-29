@@ -3,19 +3,10 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
-import 'package:charity_managment/features/campaigns/presentation/providers/campaign_detail_provider.dart';
-import 'package:charity_managment/features/campaigns/presentation/providers/campaigns_list_provider.dart';
-import 'package:charity_managment/features/campaigns/presentation/providers/followed_campaigns_provider.dart';
-import 'package:charity_managment/features/campaigns/presentation/providers/campaign_repository_provider.dart';
 import 'package:charity_managment/features/donations/domain/donation_create_input.dart';
+import 'package:charity_managment/features/donations/domain/donation_checkout_session.dart';
 import 'package:charity_managment/features/donations/presentation/providers/donation_history_provider.dart';
 import 'package:charity_managment/features/donations/presentation/providers/donation_repository_provider.dart';
-import 'package:charity_managment/features/donations/presentation/providers/donation_receipt_generation_provider.dart';
-import 'package:charity_managment/features/notifications/data/notification_followers_registry.dart';
-import 'package:charity_managment/features/notifications/domain/notification_factory.dart';
-import 'package:charity_managment/features/notifications/presentation/providers/notification_repository_provider.dart';
-import 'package:charity_managment/features/notifications/presentation/providers/notification_unread_count_provider.dart';
-import 'package:charity_managment/features/notifications/presentation/providers/notifications_list_provider.dart';
 import 'package:charity_managment/models/donation.dart';
 
 class DonationSubmissionController extends StateNotifier<AsyncValue<Donation?>> {
@@ -47,48 +38,62 @@ class DonationSubmissionController extends StateNotifier<AsyncValue<Donation?>> 
         isAnonymous: input.isAnonymous,
         message: input.message?.trim().isEmpty ?? true ? null : input.message?.trim(),
         transactionId: _nextTransactionId(),
-        status: DonationStatus.completed,
+        status: DonationStatus.pending,
         donatedAt: DateTime.now(),
       );
 
-      final created = await repository.createDonation(donation);
-      await _ref.read(donationReceiptGenerationProvider.notifier).generate(created);
-      final campaignRepository = _ref.read(campaignRepositoryProvider);
-      final updatedCampaign = await campaignRepository.applyDonation(
-        campaignId: input.campaignId,
-        amount: input.amount,
+      final session = await repository.createDonationCheckout(donation);
+
+      _ref.read(donationCheckoutSessionProvider.notifier).state = session;
+
+      final pendingDonation = Donation(
+        id: donation.id,
+        donorId: donation.donorId,
+        campaignId: donation.campaignId,
+        amount: donation.amount,
+        isAnonymous: donation.isAnonymous,
+        transactionId: session.txRef.isNotEmpty ? session.txRef : donation.transactionId,
+        status: DonationStatus.pending,
+        donatedAt: donation.donatedAt,
+        message: donation.message,
       );
 
-      final notificationRepository = _ref.read(notificationRepositoryProvider);
-      await notificationRepository.createNotification(
-        NotificationFactory.donationCompleted(
-          userId: user.id,
-          donation: created,
-          campaign: updatedCampaign,
-        ),
-      );
+      state = AsyncValue.data(pendingDonation);
+      return pendingDonation;
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      return null;
+    }
+  }
 
-      if (updatedCampaign.currentAmount >= updatedCampaign.targetAmount) {
-        final followers =
-            NotificationFollowersRegistry.followersForCampaign(updatedCampaign.id);
-        for (final followerId in followers) {
-          await notificationRepository.createNotification(
-            NotificationFactory.campaignTargetReached(
-              userId: followerId,
-              campaign: updatedCampaign,
-            ),
-          );
-        }
+  Future<Donation?> refreshCheckoutStatus() async {
+    final session = _ref.read(donationCheckoutSessionProvider);
+    if (session == null || session.txRef.isEmpty) {
+      state = AsyncValue.error('No active checkout session found.', StackTrace.current);
+      return null;
+    }
+
+    state = const AsyncValue.loading();
+
+    try {
+      final repository = _ref.read(donationRepositoryProvider);
+      final donation = await repository.getDonationByTransactionRef(session.txRef);
+
+      if (donation == null) {
+        state = AsyncValue.error('Payment not found yet. Please try again.', StackTrace.current);
+        return null;
+      }
+
+      state = AsyncValue.data(donation);
+
+      if (donation.status == DonationStatus.completed ||
+          donation.status == DonationStatus.failed ||
+          donation.status == DonationStatus.refunded) {
+        _ref.read(donationCheckoutSessionProvider.notifier).state = null;
       }
 
       _ref.invalidate(donationHistoryProvider);
-      _ref.invalidate(campaignsListProvider);
-      _ref.invalidate(followedCampaignsProvider);
-      _ref.invalidate(campaignDetailProvider(input.campaignId));
-      _ref.invalidate(notificationsListProvider);
-      _ref.invalidate(notificationUnreadCountProvider);
-      state = AsyncValue.data(created);
-      return created;
+      return donation;
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
       return null;
@@ -97,6 +102,7 @@ class DonationSubmissionController extends StateNotifier<AsyncValue<Donation?>> 
 
   void clear() {
     state = const AsyncValue.data(null);
+    _ref.read(donationCheckoutSessionProvider.notifier).state = null;
   }
 
   String _nextDonationId() {
@@ -109,6 +115,8 @@ class DonationSubmissionController extends StateNotifier<AsyncValue<Donation?>> 
     return 'txn_${DateTime.now().millisecondsSinceEpoch}_$rand';
   }
 }
+
+final donationCheckoutSessionProvider = StateProvider<DonationCheckoutSession?>((ref) => null);
 
 final donationSubmissionProvider =
     StateNotifierProvider.autoDispose<DonationSubmissionController, AsyncValue<Donation?>>((ref) {

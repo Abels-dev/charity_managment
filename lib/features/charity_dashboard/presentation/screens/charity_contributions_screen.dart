@@ -39,7 +39,7 @@ class CharityContributionsScreen extends ConsumerWidget {
             child: ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: contributions.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              separatorBuilder: (_, index) => const SizedBox(height: 10),
               itemBuilder: (context, index) {
                 return DonationActivityCard(activity: contributions[index]);
               },

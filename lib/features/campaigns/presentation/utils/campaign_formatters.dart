@@ -1,7 +1,7 @@
 class CampaignFormatters {
   static String money(double value) {
     final whole = value.toStringAsFixed(0);
-    return 'USD $whole';
+    return 'ETB $whole';
   }
 
   static String percent(double value) {

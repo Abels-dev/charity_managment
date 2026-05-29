@@ -85,6 +85,7 @@ class CharityDashboardScreen extends ConsumerWidget {
               onCreateCampaign: () => context.go(AppRoutes.createCampaign),
               onContributions: () => context.go(AppRoutes.charityContributions),
               onRequests: () => context.go(AppRoutes.charityCampaignRequests),
+              onBankAccounts: () => context.go(AppRoutes.bankAccounts),
               onNotifications: () => context.go(AppRoutes.notifications),
               onProfile: () => context.go(AppRoutes.profile),
             ),
@@ -204,6 +205,7 @@ class _QuickActionsRow extends StatelessWidget {
     required this.onCreateCampaign,
     required this.onContributions,
     required this.onRequests,
+    required this.onBankAccounts,
     required this.onNotifications,
     required this.onProfile,
   });
@@ -212,6 +214,7 @@ class _QuickActionsRow extends StatelessWidget {
   final VoidCallback onCreateCampaign;
   final VoidCallback onContributions;
   final VoidCallback onRequests;
+  final VoidCallback onBankAccounts;
   final VoidCallback onNotifications;
   final VoidCallback onProfile;
 
@@ -240,6 +243,11 @@ class _QuickActionsRow extends StatelessWidget {
           onPressed: onRequests,
           icon: const Icon(Icons.inbox_outlined),
           label: const Text('Requests'),
+        ),
+        OutlinedButton.icon(
+          onPressed: onBankAccounts,
+          icon: const Icon(Icons.account_balance_outlined),
+          label: const Text('Bank Accounts'),
         ),
         OutlinedButton.icon(
           onPressed: onNotifications,

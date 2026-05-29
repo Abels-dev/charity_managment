@@ -22,6 +22,7 @@ class AppRoutes {
   static const donationReceiptPattern = '/donations/:donationId/receipt';
   static const charityContributions = '/charity/contributions';
   static const charityCampaignRequests = '/charity/campaign-requests';
+  static const bankAccounts = '/charity/bank-accounts';
   static const notifications = '/notifications';
   static const profile = '/profile';
   static const editProfile = '/profile/edit';

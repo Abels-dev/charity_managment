@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:charity_managment/features/donations/domain/donation_create_input.dart';
+import 'package:charity_managment/features/donations/domain/donation_checkout_session.dart';
 import 'package:charity_managment/features/donations/presentation/providers/donation_submission_provider.dart';
 import 'package:charity_managment/models/campaign.dart';
 import 'package:charity_managment/models/donation.dart';
@@ -26,6 +28,7 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
   late final TextEditingController _amountController;
   late final TextEditingController _messageController;
   late final ProviderSubscription<AsyncValue<Donation?>> _submissionSub;
+  late final ProviderSubscription<DonationCheckoutSession?> _checkoutSub;
   bool _isAnonymous = false;
 
   @override
@@ -48,9 +51,29 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
         if (next.hasValue && next.value != null) {
           if (!mounted) return;
           widget.onSuccess?.call(next.value!.id);
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          }
+        }
+      },
+    );
+
+    _checkoutSub = ref.listenManual<DonationCheckoutSession?>(
+      donationCheckoutSessionProvider,
+      (previous, next) {
+        if (next == null || !mounted) return;
+
+        final uri = Uri.tryParse(next.actionUrl);
+        if (uri != null) {
+          launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Checkout ready. Open ${next.actionUrl} to complete payment.'),
+            duration: const Duration(seconds: 6),
+          ),
+        );
+
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
         }
       },
     );
@@ -59,6 +82,7 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
   @override
   void dispose() {
     _submissionSub.close();
+    _checkoutSub.close();
     _amountController.dispose();
     _messageController.dispose();
     super.dispose();

@@ -15,6 +15,12 @@ class DashboardSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final subtitleWidget = subtitle == null
+        ? null
+        : Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(subtitle!, style: textTheme.bodySmall),
+          );
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -24,14 +30,11 @@ class DashboardSectionHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(title, style: textTheme.titleMedium),
-              if (subtitle != null) ...[
-                const SizedBox(height: 4),
-                Text(subtitle!, style: textTheme.bodySmall),
-              ],
+              ?subtitleWidget,
             ],
           ),
         ),
-        if (trailing != null) trailing!,
+        ?trailing,
       ],
     );
   }

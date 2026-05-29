@@ -43,6 +43,37 @@ class ProfileUpdateController extends StateNotifier<AsyncValue<ProfileData?>> {
     }
   }
 
+  Future<ProfileData?> createCharityProfile({
+    required String organizationName,
+    required String description,
+    required String documentPath,
+    String? logoPath,
+    String? phone,
+    String? address,
+    String? website,
+  }) async {
+    state = const AsyncValue.loading();
+
+    try {
+      final repository = _ref.read(profileRepositoryProvider);
+      final updated = await repository.createCharityProfile(
+        organizationName: organizationName,
+        description: description,
+        documentPath: documentPath,
+        logoPath: logoPath,
+        phone: phone,
+        address: address,
+        website: website,
+      );
+      _ref.invalidate(currentProfileProvider);
+      state = AsyncValue.data(updated);
+      return updated;
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      return null;
+    }
+  }
+
   void clear() {
     state = const AsyncValue.data(null);
   }

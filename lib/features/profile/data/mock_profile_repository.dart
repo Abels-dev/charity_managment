@@ -1,5 +1,6 @@
 import 'package:charity_managment/features/profile/data/local/profile_local_storage.dart';
 import 'package:charity_managment/features/profile/domain/models/charity_profile_update_input.dart';
+import 'package:charity_managment/features/profile/domain/models/charity_profile.dart';
 import 'package:charity_managment/features/profile/domain/models/profile_data.dart';
 import 'package:charity_managment/features/profile/domain/models/profile_role.dart';
 import 'package:charity_managment/features/profile/domain/models/user_profile_update_input.dart';
@@ -73,6 +74,43 @@ class MockProfileRepository implements ProfileRepository {
       user: updatedUser,
       charityProfile: updatedCharity,
     );
+    await _localStorage.saveProfile(role, updatedProfile);
+    return updatedProfile;
+  }
+
+  @override
+  Future<ProfileData> createCharityProfile({
+    required String organizationName,
+    required String description,
+    required String documentPath,
+    String? logoPath,
+    String? phone,
+    String? address,
+    String? website,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+
+    final current = await getCurrentUserProfile();
+    final charityProfile = current.charityProfile?.copyWith(
+          organizationName: organizationName,
+          description: description,
+          documentUrl: documentPath,
+          phone: phone,
+          address: address,
+          website: website,
+          verifiedAt: null,
+        ) ??
+        CharityProfile(
+          organizationName: organizationName,
+          description: description,
+          documentUrl: documentPath,
+          phone: phone,
+          address: address,
+          website: website,
+          verifiedAt: null,
+        );
+
+    final updatedProfile = current.copyWith(charityProfile: charityProfile);
     await _localStorage.saveProfile(role, updatedProfile);
     return updatedProfile;
   }

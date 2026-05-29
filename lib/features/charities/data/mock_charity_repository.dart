@@ -22,4 +22,10 @@ class MockCharityRepository implements CharityRepository {
     }
     return null;
   }
+
+  @override
+  Future<CharityPublicProfile?> getMyProfile() async {
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    return _charities.isEmpty ? null : _charities.first;
+  }
 }

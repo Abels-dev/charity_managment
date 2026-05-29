@@ -8,4 +8,14 @@ abstract class ProfileRepository {
   Future<ProfileData> updateUserProfile(UserProfileUpdateInput input);
 
   Future<ProfileData> updateCharityProfile(CharityProfileUpdateInput input);
+
+  Future<ProfileData> createCharityProfile({
+    required String organizationName,
+    required String description,
+    required String documentPath,
+    String? logoPath,
+    String? phone,
+    String? address,
+    String? website,
+  });
 }

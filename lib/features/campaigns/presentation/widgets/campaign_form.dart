@@ -11,6 +11,7 @@ class CampaignForm extends StatelessWidget {
     required this.descriptionController,
     required this.targetAmountController,
     required this.imageUrlController,
+    required this.onPickImage,
     required this.startDate,
     required this.endDate,
     required this.onPickStartDate,
@@ -28,6 +29,7 @@ class CampaignForm extends StatelessWidget {
   final TextEditingController descriptionController;
   final TextEditingController targetAmountController;
   final TextEditingController imageUrlController;
+  final VoidCallback onPickImage;
   final DateTime? startDate;
   final DateTime? endDate;
   final VoidCallback onPickStartDate;
@@ -90,9 +92,18 @@ class CampaignForm extends StatelessWidget {
           const SizedBox(height: 12),
           AuthTextField(
             controller: imageUrlController,
-            label: 'Image URL',
+            label: 'Image path or URL',
             textInputAction: TextInputAction.next,
             validator: _url,
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: onPickImage,
+              icon: const Icon(Icons.image_outlined),
+              label: const Text('Choose image'),
+            ),
           ),
           const SizedBox(height: 12),
           _DateButton(
@@ -135,6 +146,7 @@ class CampaignForm extends StatelessWidget {
   String? _url(String? value) {
     final text = (value ?? '').trim();
     if (text.isEmpty) return 'Image URL is required';
+    if (text.startsWith('/')) return null;
     final uri = Uri.tryParse(text);
     if (uri == null || (!uri.hasScheme || !uri.hasAuthority)) {
       return 'Enter a valid URL';

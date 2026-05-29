@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,6 +17,7 @@ import 'package:charity_managment/features/campaigns/presentation/screens/edit_c
 import 'package:charity_managment/features/campaigns/presentation/screens/followed_campaigns_screen.dart';
 import 'package:charity_managment/features/campaigns/presentation/screens/my_campaigns_screen.dart';
 import 'package:charity_managment/features/charity_dashboard/presentation/screens/charity_dashboard_screen.dart';
+import 'package:charity_managment/features/bank_accounts/presentation/screens/bank_accounts_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/anonymous_donations_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donations_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donation_detail_screen.dart';
@@ -31,11 +33,79 @@ import 'package:charity_managment/features/campaign_requests/presentation/screen
 import 'package:charity_managment/models/user_role.dart';
 import 'package:charity_managment/routing/app_routes.dart';
 
+/// A [ChangeNotifier] that listens to [authControllerProvider] and notifies
+/// the router whenever auth state changes, triggering a redirect evaluation.
+class _AuthChangeNotifier extends ChangeNotifier {
+  _AuthChangeNotifier(Ref ref) {
+    // Listen to the auth provider; any state change triggers notifyListeners
+    // which causes GoRouter to re-run its redirect function.
+    ref.listen(authControllerProvider, (previous, next) {
+      notifyListeners();
+    });
+  }
+}
+
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final auth = ref.watch(authControllerProvider);
+  final notifier = _AuthChangeNotifier(ref);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
+    refreshListenable: notifier,
+    redirect: (context, state) {
+      // Read current auth state at the time the redirect runs (not captured
+      // at construction time), so it always reflects the latest value.
+      final auth = ref.read(authControllerProvider);
+      final location = state.matchedLocation;
+      final isAuthFlowRoute = _authFlowRoutes.contains(location);
+
+      if (auth.status == AuthStatus.bootstrapping) {
+        return location == AppRoutes.splash ? null : AppRoutes.splash;
+      }
+
+      if (auth.isAuthenticated) {
+        final role = auth.user?.role;
+
+        if (location == AppRoutes.charityDashboard && auth.user?.role == UserRole.donor) {
+          return AppRoutes.campaigns;
+        }
+
+        if (role == UserRole.donor && _isCharityOnlyLocation(location)) {
+          return AppRoutes.campaigns;
+        }
+
+        if (role == UserRole.charityOrganization && _isDonorOnlyLocation(location)) {
+          return _defaultRouteForRole(role);
+        }
+
+        if (role == UserRole.charityOrganization && location == AppRoutes.followedCampaigns) {
+          return AppRoutes.myCampaigns;
+        }
+
+        if (isAuthFlowRoute || location == AppRoutes.root) {
+          return _defaultRouteForRole(role);
+        }
+
+        return null;
+      }
+
+      if (location == AppRoutes.splash) {
+        return AppRoutes.root;
+      }
+
+      if (!auth.onboardingSeen && isAuthFlowRoute) {
+        return location == AppRoutes.onboarding ? null : AppRoutes.onboarding;
+      }
+
+      if (auth.selectedRole == null && _requiresRoleSelection(location)) {
+        return location == AppRoutes.roleSelection ? null : AppRoutes.roleSelection;
+      }
+
+      if (_isProtectedLocation(location) || location == AppRoutes.splash) {
+        return AppRoutes.login;
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: AppRoutes.root,
@@ -155,60 +225,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.charityCampaignRequests,
         builder: (context, state) => const CampaignRequestsScreen(),
       ),
+      GoRoute(
+        path: AppRoutes.bankAccounts,
+        builder: (context, state) => const BankAccountsScreen(),
+      ),
     ],
-    redirect: (context, state) {
-      final location = state.matchedLocation;
-      final isAuthFlowRoute = _authFlowRoutes.contains(location);
-
-      if (auth.status == AuthStatus.bootstrapping) {
-        return location == AppRoutes.splash ? null : AppRoutes.splash;
-      }
-
-      if (auth.isAuthenticated) {
-        final role = auth.user?.role;
-
-        if (location == AppRoutes.charityDashboard && auth.user?.role == UserRole.donor) {
-          return AppRoutes.campaigns;
-        }
-
-        if (role == UserRole.donor && _isCharityOnlyLocation(location)) {
-          return AppRoutes.campaigns;
-        }
-
-        if (role == UserRole.charityOrganization && _isDonorOnlyLocation(location)) {
-          return _defaultRouteForRole(role);
-        }
-
-        if (role == UserRole.charityOrganization && location == AppRoutes.followedCampaigns) {
-          return AppRoutes.myCampaigns;
-        }
-
-        if (isAuthFlowRoute || location == AppRoutes.root) {
-          return _defaultRouteForRole(role);
-        }
-
-        return null;
-      }
-
-      if (location == AppRoutes.splash) {
-        return AppRoutes.root;
-      }
-
-      if (!auth.onboardingSeen && isAuthFlowRoute) {
-        return location == AppRoutes.onboarding ? null : AppRoutes.onboarding;
-      }
-
-      if (auth.selectedRole == null && _requiresRoleSelection(location)) {
-        return location == AppRoutes.roleSelection ? null : AppRoutes.roleSelection;
-      }
-
-      if (_isProtectedLocation(location) ||
-          location == AppRoutes.splash) {
-        return AppRoutes.login;
-      }
-
-      return null;
-    },
   );
 });
 
@@ -233,6 +254,7 @@ const _protectedRoutes = {
   AppRoutes.charityDashboard,
   AppRoutes.charityContributions,
   AppRoutes.charityCampaignRequests,
+  AppRoutes.bankAccounts,
 };
 
 bool _isProtectedLocation(String location) {
@@ -256,7 +278,8 @@ bool _isCharityOnlyLocation(String location) {
   if (location == AppRoutes.myCampaigns ||
       location == AppRoutes.createCampaign ||
       location == AppRoutes.charityContributions ||
-      location == AppRoutes.charityCampaignRequests) {
+      location == AppRoutes.charityCampaignRequests ||
+      location == AppRoutes.bankAccounts) {
     return true;
   }
 

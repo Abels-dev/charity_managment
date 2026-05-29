@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
 
 import 'package:charity_managment/features/campaigns/presentation/providers/create_campaign_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_form.dart';
@@ -62,6 +63,14 @@ class _CreateCampaignScreenState extends ConsumerState<CreateCampaignScreen> {
     }
   }
 
+  Future<void> _pickImage() async {
+    final result = await FilePicker.platform.pickFiles(withData: false);
+    final path = result?.files.single.path;
+    if (path != null) {
+      setState(() => _imageUrlController.text = path);
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_startDate == null || _endDate == null) {
@@ -114,6 +123,7 @@ class _CreateCampaignScreenState extends ConsumerState<CreateCampaignScreen> {
             descriptionController: _descriptionController,
             targetAmountController: _targetAmountController,
             imageUrlController: _imageUrlController,
+            onPickImage: _pickImage,
             startDate: _startDate,
             endDate: _endDate,
             onPickStartDate: _pickStartDate,

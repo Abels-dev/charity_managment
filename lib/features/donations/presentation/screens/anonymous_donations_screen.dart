@@ -48,7 +48,7 @@ class AnonymousDonationsScreen extends ConsumerWidget {
             child: ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: anonymous.length + (visibilityState.hasError ? 1 : 0),
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 if (visibilityState.hasError && index == 0) {
                   return Padding(

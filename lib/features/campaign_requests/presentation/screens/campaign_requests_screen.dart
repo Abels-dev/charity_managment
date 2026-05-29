@@ -39,7 +39,7 @@ class CampaignRequestsScreen extends ConsumerWidget {
             child: ListView.separated(
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: requests.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 return _RequestCard(request: requests[index]);
               },
@@ -105,15 +105,25 @@ class _RequestCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: null,
-                    child: const Text('Review'),
+                    onPressed: request.status == CampaignRequestStatus.pending
+                        ? () => _handleReviewAction(
+                              context,
+                              approve: false,
+                            )
+                        : null,
+                    child: const Text('Reject'),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: FilledButton(
-                    onPressed: null,
-                    child: const Text('Update Status'),
+                    onPressed: request.status == CampaignRequestStatus.pending
+                        ? () => _handleReviewAction(
+                              context,
+                              approve: true,
+                            )
+                        : null,
+                    child: const Text('Approve'),
                   ),
                 ),
               ],
@@ -122,5 +132,35 @@ class _RequestCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _handleReviewAction(BuildContext context, {required bool approve}) async {
+    final container = ProviderScope.containerOf(context);
+    final repository = container.read(campaignRequestRepositoryProvider);
+
+    try {
+      if (approve) {
+        await repository.approveCampaignRequest(request.id);
+      } else {
+        await repository.rejectCampaignRequest(requestId: request.id);
+      }
+
+      container.invalidate(campaignRequestsProvider);
+      await container.read(campaignRequestsProvider.future);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(approve ? 'Request approved.' : 'Request rejected.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Action failed: $e')),
+        );
+      }
+    }
   }
 }

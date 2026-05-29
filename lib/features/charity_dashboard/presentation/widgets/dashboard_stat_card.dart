@@ -17,7 +17,7 @@ class DashboardStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final background = (tint ?? colorScheme.primary).withOpacity(0.12);
+    final background = (tint ?? colorScheme.primary).withValues(alpha: 0.12);
 
     return Card(
       child: Padding(

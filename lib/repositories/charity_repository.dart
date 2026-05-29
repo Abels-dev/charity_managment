@@ -4,4 +4,6 @@ abstract class CharityRepository {
   Future<List<CharityPublicProfile>> fetchCharities();
 
   Future<CharityPublicProfile?> getCharityById(String charityId);
+
+  Future<CharityPublicProfile?> getMyProfile();
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
 
 import 'package:charity_managment/features/profile/domain/models/charity_profile_update_input.dart';
 import 'package:charity_managment/features/profile/domain/models/profile_data.dart';
@@ -30,6 +31,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _descriptionController = TextEditingController();
   final _websiteController = TextEditingController();
   final _addressController = TextEditingController();
+  final _documentPathController = TextEditingController();
+  final _logoPathController = TextEditingController();
 
   bool _initialized = false;
 
@@ -41,6 +44,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _descriptionController.dispose();
     _websiteController.dispose();
     _addressController.dispose();
+    _documentPathController.dispose();
+    _logoPathController.dispose();
     super.dispose();
   }
 
@@ -60,6 +65,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           }
 
           final isCharity = profile.user.role == ProfileRole.charity;
+          final isCreatingCharityProfile = isCharity && profile.charityProfile == null;
 
           return SingleChildScrollView(
             child: Form(
@@ -101,6 +107,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             controller: _descriptionController,
                             maxLines: 3,
                           ),
+                          if (isCreatingCharityProfile) ...[
+                            const SizedBox(height: 12),
+                            _FilePickerButton(
+                              label: 'Document (required)',
+                              value: _documentPathController.text,
+                              onPressed: _pickDocument,
+                            ),
+                            const SizedBox(height: 12),
+                            _FilePickerButton(
+                              label: 'Logo (optional)',
+                              value: _logoPathController.text,
+                              onPressed: _pickLogo,
+                            ),
+                          ],
                           const SizedBox(height: 12),
                           ProfileTextField(
                             label: 'Website',
@@ -136,7 +156,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           ? null
                           : () async {
                               if (!_formKey.currentState!.validate()) return;
-                              await _submit(profile.user.role);
+                              await _submit(
+                                profile.user.role,
+                                createProfile: isCreatingCharityProfile,
+                              );
                             },
                       child: updateState.isLoading
                           ? const SizedBox(
@@ -165,28 +188,48 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _descriptionController.text = charity?.description ?? '';
     _websiteController.text = charity?.website ?? '';
     _addressController.text = charity?.address ?? '';
+    _documentPathController.text = charity?.documentUrl ?? '';
+    _logoPathController.text = '';
   }
 
-  Future<void> _submit(ProfileRole role) async {
+    Future<void> _submit(ProfileRole role, {required bool createProfile}) async {
     final notifier = ref.read(profileUpdateProvider.notifier);
     if (role == ProfileRole.charity) {
-      final updated = await notifier.updateCharityProfile(
-        CharityProfileUpdateInput(
+      final updated = createProfile
+        ? await notifier.createCharityProfile(
+          organizationName: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          documentPath: _documentPathController.text.trim(),
+          logoPath: _logoPathController.text.trim().isEmpty
+            ? null
+            : _logoPathController.text.trim(),
+          phone: _phoneController.text.trim().isEmpty
+            ? null
+            : _phoneController.text.trim(),
+          website: _websiteController.text.trim().isEmpty
+            ? null
+            : _websiteController.text.trim(),
+          address: _addressController.text.trim().isEmpty
+            ? null
+            : _addressController.text.trim(),
+        )
+        : await notifier.updateCharityProfile(
+          CharityProfileUpdateInput(
           organizationName: _nameController.text.trim(),
           description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
+            ? null
+            : _descriptionController.text.trim(),
           phone: _phoneController.text.trim().isEmpty
-              ? null
-              : _phoneController.text.trim(),
+            ? null
+            : _phoneController.text.trim(),
           website: _websiteController.text.trim().isEmpty
-              ? null
-              : _websiteController.text.trim(),
+            ? null
+            : _websiteController.text.trim(),
           address: _addressController.text.trim().isEmpty
-              ? null
-              : _addressController.text.trim(),
-        ),
-      );
+            ? null
+            : _addressController.text.trim(),
+          ),
+        );
       if (updated != null && mounted) {
         context.pop();
       }
@@ -204,5 +247,54 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         context.pop();
       }
     }
+  }
+
+  Future<void> _pickDocument() async {
+    final result = await FilePicker.platform.pickFiles(withData: false);
+    final path = result?.files.single.path;
+    if (path != null) {
+      setState(() => _documentPathController.text = path);
+    }
+  }
+
+  Future<void> _pickLogo() async {
+    final result = await FilePicker.platform.pickFiles(withData: false);
+    final path = result?.files.single.path;
+    if (path != null) {
+      setState(() => _logoPathController.text = path);
+    }
+  }
+}
+
+class _FilePickerButton extends StatelessWidget {
+  const _FilePickerButton({
+    required this.label,
+    required this.value,
+    required this.onPressed,
+  });
+
+  final String label;
+  final String value;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        OutlinedButton(
+          onPressed: onPressed,
+          child: SizedBox(
+            width: double.infinity,
+            child: Text(
+              value.isEmpty ? 'Choose file' : value.split('/').last,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

@@ -71,6 +71,8 @@ class _EditCampaignScreenState extends ConsumerState<EditCampaignScreen> {
     }
   }
 
+  Future<void> _pickImage() async {}
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_endDate == null) {
@@ -161,6 +163,7 @@ class _EditCampaignScreenState extends ConsumerState<EditCampaignScreen> {
                 descriptionController: _descriptionController,
                 targetAmountController: _targetAmountController,
                 imageUrlController: _imageUrlController,
+                onPickImage: _pickImage,
                 startDate: _startDate,
                 endDate: _endDate,
                 onPickStartDate: () {},

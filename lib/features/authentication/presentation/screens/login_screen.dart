@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:charity_managment/features/authentication/domain/models/auth_status.dart';
 import 'package:charity_managment/features/authentication/presentation/utils/auth_validators.dart';
 import 'package:charity_managment/features/authentication/presentation/widgets/auth_error_message.dart';
 import 'package:charity_managment/features/authentication/presentation/widgets/auth_form_card.dart';
 import 'package:charity_managment/features/authentication/presentation/widgets/auth_primary_button.dart';
 import 'package:charity_managment/features/authentication/presentation/widgets/auth_screen_shell.dart';
 import 'package:charity_managment/features/authentication/presentation/widgets/auth_text_field.dart';
+import 'package:charity_managment/models/user_role.dart';
 import 'package:charity_managment/routing/app_routes.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -43,6 +45,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authControllerProvider, (previous, next) {
+      if (previous?.status != AuthStatus.authenticated && next.status == AuthStatus.authenticated) {
+        final target = next.user?.role == UserRole.charityOrganization
+            ? AppRoutes.charityDashboard
+            : AppRoutes.campaigns;
+        if (context.mounted) {
+          context.go(target);
+        }
+      }
+    });
+
     final state = ref.watch(authControllerProvider);
 
     return AuthScreenShell(

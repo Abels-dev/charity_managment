@@ -1,5 +1,6 @@
 import 'package:charity_managment/models/donation.dart';
 import 'package:charity_managment/models/donation_receipt.dart';
+import 'package:charity_managment/features/donations/domain/donation_checkout_session.dart';
 import 'package:charity_managment/repositories/donation_repository.dart';
 import 'package:charity_managment/shared/mock_data/mock_donations.dart';
 
@@ -12,6 +13,18 @@ class MockDonationRepository implements DonationRepository {
     await Future<void>.delayed(const Duration(milliseconds: 900));
     _donations.insert(0, donation);
     return donation;
+  }
+
+  @override
+  Future<DonationCheckoutSession> createDonationCheckout(Donation donation) async {
+    await Future<void>.delayed(const Duration(milliseconds: 900));
+    _donations.insert(0, donation);
+    return DonationCheckoutSession(
+      donationId: donation.id,
+      txRef: donation.transactionId,
+      actionUrl: 'https://example.org/mock-checkout',
+      fields: const {},
+    );
   }
 
   @override
@@ -77,6 +90,19 @@ class MockDonationRepository implements DonationRepository {
 
     _donations[index] = updated;
     return updated;
+  }
+
+  @override
+  Future<Donation?> getDonationByTransactionRef(String txRef) async {
+    await Future<void>.delayed(const Duration(milliseconds: 220));
+
+    for (final donation in _donations) {
+      if (donation.transactionId == txRef) {
+        return donation;
+      }
+    }
+
+    return null;
   }
 
   @override
