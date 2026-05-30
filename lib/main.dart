@@ -14,12 +14,9 @@ void main() async {
 
   final sharedPreferences = await SharedPreferences.getInstance();
 
-  // Set up a persistent cookie jar so Dio automatically stores and replays
-  // the backend's httpOnly `cms_auth` session cookie on every request.
-  // Note: getApplicationDocumentsDirectory is not supported on Web.
   final CookieJar cookieJar;
   if (kIsWeb) {
-    cookieJar = CookieJar(); // In-memory fallback for web (browser handles actual cookies)
+    cookieJar = CookieJar();
   } else {
     final appDocDir = await getApplicationDocumentsDirectory();
     cookieJar = PersistCookieJar(

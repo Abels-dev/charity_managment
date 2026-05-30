@@ -11,13 +11,13 @@ class CategoryBadge extends StatelessWidget {
   });
 
   static const Map<String, Color> _categoryColors = {
-    'education': Color(0xFF3B82F6), // Blue
-    'health': Color(0xFFEF4444),    // Red
-    'water': Color(0xFF06B6D4),     // Cyan
-    'food': Color(0xFFF59E0B),      // Amber
-    'environment': Color(0xFF10B981), // Emerald
-    'emergency': Color(0xFFF97316),   // Orange
-    'default': Color(0xFF64748B),     // Slate
+    'education': Color(0xFF3B82F6),
+    'health': Color(0xFFEF4444),
+    'water': Color(0xFF06B6D4),
+    'food': Color(0xFFF59E0B),
+    'environment': Color(0xFF10B981),
+    'emergency': Color(0xFFF97316),
+    'default': Color(0xFF64748B),
   };
 
   @override

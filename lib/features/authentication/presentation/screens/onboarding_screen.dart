@@ -53,7 +53,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
     final controller = ref.read(authControllerProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.surface, // #F8FAFC
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -69,7 +69,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Spacer(),
-                  // Large emerald hero element / icon
                   Container(
                     width: 140,
                     height: 140,
@@ -81,27 +80,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                       child: Icon(
                         Icons.volunteer_activism,
                         size: 72,
-                        color: AppColors.primary, // emerald
+                        color: AppColors.primary,
                       ),
                     ),
                   ),
                   const SizedBox(height: AppTheme.spacing48),
-                  // App name
                   Text(
                     'Charity\nManagement',
                     style: AppTextStyles.display.copyWith(
-                      color: AppColors.textPrimary, // slate-900
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.w800,
                       height: 1.2,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppTheme.spacing16),
-                  // Tagline
                   Text(
                     'Manage donations, campaigns, and impact in one place.',
                     style: AppTextStyles.body.copyWith(
-                      color: AppColors.textBody, // slate-500
+                      color: AppColors.textBody,
                       fontSize: 16,
                     ),
                     textAlign: TextAlign.center,
@@ -118,7 +115,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                       ),
                     ),
 
-                  // Get Started button
                   AppButton(
                     text: 'Get Started',
                     isLoading: authState.isSubmitting,
@@ -130,7 +126,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> with Single
                     },
                   ),
                   const SizedBox(height: AppTheme.spacing16),
-                  // Login link
                   TextButton(
                     onPressed: () async {
                       await controller.completeOnboarding();

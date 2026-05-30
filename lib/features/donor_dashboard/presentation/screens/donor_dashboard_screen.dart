@@ -48,7 +48,6 @@ class DonorDashboardScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing24),
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            // 1. Welcome header with user name/avatar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
               child: Row(
@@ -83,7 +82,6 @@ class DonorDashboardScreen extends ConsumerWidget {
             
             const SizedBox(height: AppTheme.spacing32),
             
-            // 2. Stats cards row (donations count, total amount)
             summaryAsync.when(
               loading: () => const Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
@@ -127,7 +125,6 @@ class DonorDashboardScreen extends ConsumerWidget {
             
             const SizedBox(height: AppTheme.spacing32),
             
-            // Quick Actions
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
               child: _QuickActionsRow(
@@ -140,7 +137,6 @@ class DonorDashboardScreen extends ConsumerWidget {
 
             const SizedBox(height: AppTheme.spacing32),
             
-            // 3. Recent donations section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
               child: _SectionHeader(
@@ -190,7 +186,6 @@ class DonorDashboardScreen extends ConsumerWidget {
             
             const SizedBox(height: AppTheme.spacing32),
             
-            // 4. Following campaigns section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
               child: _SectionHeader(

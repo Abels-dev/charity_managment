@@ -57,8 +57,6 @@ class ApiAuthRepository implements AuthRepository {
 
     UserProfile? user;
 
-    // The cookie jar holds the session cookie. If it has cookies for the API
-    // base URL, we try to restore the session by calling /api/auth/me.
     try {
       final response = await _dio.get('/api/auth/me');
       if (response.statusCode == 200) {
@@ -73,7 +71,6 @@ class ApiAuthRepository implements AuthRepository {
         'Bootstrap /api/auth/me failed (status=$status) — treating as unauthenticated.',
         name: 'ApiAuthRepository',
       );
-      // Clear any stale cookies so we don't keep retrying with a bad token.
       await _cookieJar.deleteAll();
       await _localStorage.clearSession();
     } catch (e) {
@@ -113,8 +110,6 @@ class ApiAuthRepository implements AuthRepository {
         'password': request.password,
       });
 
-      // The CookieManager interceptor automatically stores the `cms_auth`
-      // cookie from the Set-Cookie header — no manual extraction needed.
       final data = (response.data['user'] as Map<String, dynamic>?) ?? const {};
       final user = _mapUser(data, fallbackRole: role);
       final token = response.data['token']?.toString();
@@ -197,7 +192,6 @@ class ApiAuthRepository implements AuthRepository {
     } catch (e) {
       developer.log('Logout network error (ignored): $e', name: 'ApiAuthRepository');
     } finally {
-      // Always clear cookies and local session regardless of network outcome.
       await _cookieJar.deleteAll();
       await _tokenStorage.clearToken();
       await _localStorage.clearSession();

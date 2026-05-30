@@ -77,7 +77,6 @@ class ApiDonationRepository implements DonationRepository {
     String? donorEmail,
     String? returnUrl,
   }) async {
-    // Forward to the implementation that accepts payer details
     return createDonationCheckoutWithPayer(
       donation,
       donorName: donorName,
@@ -86,7 +85,6 @@ class ApiDonationRepository implements DonationRepository {
     );
   }
 
-  // New overloaded implementation that accepts donor details and optional returnUrl
   Future<DonationCheckoutSession> createDonationCheckoutWithPayer(
     Donation donation, {
     String? donorName,
@@ -133,8 +131,6 @@ class ApiDonationRepository implements DonationRepository {
 
   @override
   Future<List<Donation>> getDonationsByCampaignIds(Set<String> campaignIds) async {
-    // Backend doesn't support fetching by campaign IDs directly for donor
-    // We fetch all history and filter locally.
     final history = await getDonationHistory('');
     return history.where((d) => campaignIds.contains(d.campaignId)).toList();
   }
@@ -151,7 +147,6 @@ class ApiDonationRepository implements DonationRepository {
 
   @override
   Future<Donation> setDonationAnonymous({required String donationId, required bool isAnonymous}) async {
-    // Backend doesn't seem to have a patch for this. We will just return it updated locally.
     final donation = await getDonationById(donationId);
     if (donation == null) throw Exception('Donation not found');
     return Donation(
@@ -192,8 +187,6 @@ class ApiDonationRepository implements DonationRepository {
     return generateReceipt(donation);
   }
 
-  /// Initialize Chapa payment checkout session for a donation
-  /// Returns the checkout URL for the user to complete payment
   Future<String> initiateChapaCheckout({
     required String campaignId,
     required double amount,
@@ -210,11 +203,9 @@ class ApiDonationRepository implements DonationRepository {
         },
       );
 
-      // Backend returns checkout session information
       final checkoutData = _asMap(response.data['data']);
       final checkoutSession = _asMap(checkoutData['checkout']);
 
-      // Return checkout URL or transaction reference for polling
       return checkoutSession['checkoutUrl'] ?? 
              checkoutSession['redirectUrl'] ?? 
              checkoutSession['txRef'] ?? 
@@ -224,8 +215,6 @@ class ApiDonationRepository implements DonationRepository {
     }
   }
 
-  /// Poll for payment verification using transaction reference
-  /// This is called after user completes payment on Chapa
   Future<Donation> verifyPaymentTransaction(String txRef) async {
     try {
       final response = await _dio.get('/api/donation/$txRef');
@@ -236,7 +225,6 @@ class ApiDonationRepository implements DonationRepository {
     }
   }
 
-  /// Get donation by transaction reference (for payment verification)
   @override
   Future<Donation?> getDonationByTransactionRef(String txRef) async {
     try {

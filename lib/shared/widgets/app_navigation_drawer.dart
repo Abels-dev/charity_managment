@@ -25,14 +25,12 @@ class AppNavigationDrawer extends ConsumerWidget {
     try {
       location = GoRouterState.of(context).uri.path;
     } catch (_) {
-      // ignore and keep default
     }
 
     return Drawer(
       backgroundColor: AppColors.surface,
       child: Column(
         children: [
-          // Header
           Material(
             color: AppColors.surface,
             child: InkWell(
@@ -94,7 +92,6 @@ class AppNavigationDrawer extends ConsumerWidget {
             ),
           ),
 
-          // Menu Items
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing12),
@@ -123,7 +120,6 @@ class AppNavigationDrawer extends ConsumerWidget {
             ),
           ),
 
-          // Footer
           if (isAuthenticated)
             Container(
               decoration: const BoxDecoration(
@@ -186,7 +182,7 @@ class _DrawerItem extends StatelessWidget {
         ),
         shape: RoundedRectangleBorder(borderRadius: AppTheme.borderRadiusMd),
         onTap: () {
-          Navigator.pop(context); // Close drawer
+          Navigator.pop(context);
           context.go(route);
         },
       ),

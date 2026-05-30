@@ -85,7 +85,6 @@ class CharityDashboardScreen extends ConsumerWidget {
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            // Quick Actions
             SizedBox(
               height: 44,
               child: ListView(
@@ -121,7 +120,6 @@ class CharityDashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppTheme.spacing24),
 
-            // Section Header: Overview
             _SectionHeader(title: 'Overview'),
             const SizedBox(height: AppTheme.spacing12),
             summaryAsync.when(
@@ -142,7 +140,6 @@ class CharityDashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppTheme.spacing24),
 
-            // Section Header: Campaign Performance
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -206,7 +203,6 @@ class CharityDashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppTheme.spacing12),
 
-            // Section Header: Recent Donations
             _SectionHeader(title: 'Recent Donations'),
             const SizedBox(height: AppTheme.spacing12),
             donationsAsync.when(
@@ -249,8 +245,6 @@ class CharityDashboardScreen extends ConsumerWidget {
     );
   }
 }
-
-// ─── Private Widgets ─────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.title});

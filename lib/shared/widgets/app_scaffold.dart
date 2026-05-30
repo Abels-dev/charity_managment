@@ -42,7 +42,6 @@ class AppScaffold extends ConsumerWidget {
     try {
       location = GoRouterState.of(context).uri.path;
     } catch (_) {
-      // ignore and keep default
     }
 
     final isDashboard = location == AppRoutes.donorDashboard || location == AppRoutes.charityDashboard;

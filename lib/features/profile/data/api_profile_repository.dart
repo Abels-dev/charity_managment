@@ -60,8 +60,7 @@ class ApiProfileRepository implements ProfileRepository {
                   : null,
             );
           }
-        } catch (e) {
-          // Charity profile might not exist yet
+        } catch (_) {
         }
       }
 
@@ -73,7 +72,6 @@ class ApiProfileRepository implements ProfileRepository {
       await _localStorage.saveProfile(role, profileData);
       return profileData;
     } catch (e) {
-      // Fallback to local storage if offline
       final stored = await _localStorage.readProfile(role);
       if (stored != null) return stored;
       throw Exception('Failed to fetch profile data');
@@ -121,7 +119,6 @@ class ApiProfileRepository implements ProfileRepository {
     }
   }
 
-  /// Creates a new charity profile with required document and optional logo uploads
   @override
   Future<ProfileData> createCharityProfile({
     required String organizationName,
@@ -141,7 +138,6 @@ class ApiProfileRepository implements ProfileRepository {
         'website': website ?? '',
       });
 
-      // Add required document file
       try {
         formData.files.add(
           MapEntry(
@@ -156,7 +152,6 @@ class ApiProfileRepository implements ProfileRepository {
         throw Exception('Failed to load document file');
       }
 
-      // Add optional logo file
       if (logoPath != null && logoPath.isNotEmpty) {
         try {
           formData.files.add(
@@ -169,7 +164,6 @@ class ApiProfileRepository implements ProfileRepository {
             ),
           );
         } catch (_) {
-          // Logo is optional, so we can skip it if there's an error
         }
       }
 

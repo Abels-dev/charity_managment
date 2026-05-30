@@ -15,25 +15,25 @@ class AppTextStyles {
 
   static TextStyle get display => GoogleFonts.inter(
         fontSize: 32,
-        fontWeight: FontWeight.w800, // ExtraBold
+        fontWeight: FontWeight.w800,
         color: AppColors.textPrimary,
       );
 
   static TextStyle get title => GoogleFonts.inter(
         fontSize: 20,
-        fontWeight: FontWeight.w800, // ExtraBold
+        fontWeight: FontWeight.w800,
         color: AppColors.textPrimary,
       );
 
   static TextStyle get body => GoogleFonts.inter(
         fontSize: 16,
-        fontWeight: FontWeight.w400, // Regular
+        fontWeight: FontWeight.w400,
         color: AppColors.textBody,
       );
 
   static TextStyle get label => GoogleFonts.inter(
         fontSize: 14,
-        fontWeight: FontWeight.w600, // SemiBold
+        fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       );
 

@@ -94,7 +94,6 @@ class CampaignDetailScreen extends ConsumerWidget {
                 child: ListView(
                   padding: EdgeInsets.zero,
                   children: [
-                    // 1. Hero Image
                     ClipRRect(
                       borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(AppTheme.radiusXl),
@@ -102,8 +101,7 @@ class CampaignDetailScreen extends ConsumerWidget {
                       ),
                       child: _CampaignHeroAvatar(title: campaign.title),
                     ),
-                    
-                    // 2. Title, CategoryBadge, Charity Name
+
                     Padding(
                       padding: const EdgeInsets.all(AppTheme.spacing24),
                       child: Column(
@@ -145,26 +143,27 @@ class CampaignDetailScreen extends ConsumerWidget {
                             style: AppTextStyles.display.copyWith(fontSize: 24),
                           ),
                           const SizedBox(height: AppTheme.spacing8),
-                          GestureDetector(
-                            onTap: () => context.go(AppRoutes.charityProfile(campaign.charityId)),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.business, size: 20, color: AppColors.textBody),
-                                const SizedBox(width: AppTheme.spacing8),
-                                Expanded(
-                                  child: Text(
-                                    campaign.organizationName,
-                                    style: AppTextStyles.label.copyWith(color: AppColors.textBody),
-                                    overflow: TextOverflow.ellipsis,
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () => context.go(AppRoutes.charityProfile(campaign.charityId)),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.business, size: 20, color: AppColors.textBody),
+                                  const SizedBox(width: AppTheme.spacing8),
+                                  Expanded(
+                                    child: Text(
+                                      campaign.organizationName,
+                                      style: AppTextStyles.label.copyWith(color: AppColors.textBody),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                          
                           const SizedBox(height: AppTheme.spacing32),
-                          
-                          // 3. Progress bar (emerald fill, show amounts)
+
                           ClipRRect(
                             borderRadius: AppTheme.borderRadiusPill,
                             child: LinearProgressIndicator(
@@ -206,19 +205,16 @@ class CampaignDetailScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          
                           const SizedBox(height: AppTheme.spacing48),
-                          
-                          // 4. Description section
+
                           Text('About this campaign', style: AppTextStyles.title),
                           const SizedBox(height: AppTheme.spacing16),
                           Text(
                             campaign.description,
                             style: AppTextStyles.body.copyWith(height: 1.6),
                           ),
-                          
                           const SizedBox(height: AppTheme.spacing32),
-                          
+
                           AppCard(
                             padding: const EdgeInsets.all(AppTheme.spacing16),
                             child: Column(
@@ -255,8 +251,7 @@ class CampaignDetailScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              
-              // 5. Sticky bottom donate button
+
               Container(
                 padding: const EdgeInsets.all(AppTheme.spacing24),
                 decoration: BoxDecoration(

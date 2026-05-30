@@ -33,12 +33,8 @@ import 'package:charity_managment/features/campaign_requests/presentation/screen
 import 'package:charity_managment/models/user_role.dart';
 import 'package:charity_managment/routing/app_routes.dart';
 
-/// A [ChangeNotifier] that listens to [authControllerProvider] and notifies
-/// the router whenever auth state changes, triggering a redirect evaluation.
 class _AuthChangeNotifier extends ChangeNotifier {
   _AuthChangeNotifier(Ref ref) {
-    // Listen to the auth provider; any state change triggers notifyListeners
-    // which causes GoRouter to re-run its redirect function.
     ref.listen(authControllerProvider, (previous, next) {
       notifyListeners();
     });
@@ -52,8 +48,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: AppRoutes.splash,
     refreshListenable: notifier,
     redirect: (context, state) {
-      // Read current auth state at the time the redirect runs (not captured
-      // at construction time), so it always reflects the latest value.
       final auth = ref.read(authControllerProvider);
       final location = state.matchedLocation;
       final isAuthFlowRoute = _authFlowRoutes.contains(location);
@@ -142,7 +136,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.register,
         builder: (context, state) => const RegisterScreen(),
       ),
-      // Forgot password route removed
       GoRoute(
         path: AppRoutes.campaigns,
         builder: (context, state) => const CampaignsScreen(),

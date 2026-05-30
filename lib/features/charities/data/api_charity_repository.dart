@@ -15,8 +15,6 @@ class ApiCharityRepository implements CharityRepository {
   @override
   Future<List<CharityPublicProfile>> fetchCharities() async {
     try {
-      // Backend does not expose a dedicated list endpoint for public charities
-      // in this API; return empty list to avoid surprising behaviour.
       return <CharityPublicProfile>[];
     } catch (e) {
       throw Exception('Failed to fetch charities');

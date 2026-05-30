@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 
-/// Represents a bank account for charity fund withdrawals
 class BankAccount {
   final String id;
   final String accountNumber;
@@ -75,7 +74,6 @@ class BankAccount {
   }
 }
 
-/// Repository for managing charity bank accounts
 class ApiBankAccountRepository {
   ApiBankAccountRepository(this._dio);
 
@@ -85,7 +83,6 @@ class ApiBankAccountRepository {
     return BankAccount.fromJson(json);
   }
 
-  /// Fetch all bank accounts for the current charity
   Future<List<BankAccount>> listMyBankAccounts() async {
     try {
       final response = await _dio.get('/api/bank-accounts/me');
@@ -100,7 +97,6 @@ class ApiBankAccountRepository {
     }
   }
 
-  /// Create a new bank account
   Future<BankAccount> createBankAccount({
     required String accountNumber,
     required String accountHolder,
@@ -125,7 +121,6 @@ class ApiBankAccountRepository {
     }
   }
 
-  /// Update an existing bank account
   Future<BankAccount> updateBankAccount({
     required String accountId,
     String? accountNumber,
@@ -149,7 +144,6 @@ class ApiBankAccountRepository {
     }
   }
 
-  /// Delete a bank account
   Future<void> deleteBankAccount(String accountId) async {
     try {
       await _dio.delete('/api/bank-accounts/$accountId');
@@ -158,7 +152,6 @@ class ApiBankAccountRepository {
     }
   }
 
-  /// Set a bank account as primary for withdrawals
   Future<BankAccount> setPrimaryBankAccount(String accountId) async {
     try {
       final response = await _dio.put(

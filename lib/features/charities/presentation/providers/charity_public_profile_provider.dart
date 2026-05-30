@@ -29,9 +29,6 @@ final charityPublicProfileProvider =
     return null;
   }
 
-  // Fetch public campaigns and filter by charity id so public profiles
-  // show the charity's campaigns (backend does not expose a dedicated
-  // public campaigns-by-charity endpoint).
   final all = await campaignRepository.fetchCampaigns();
   final campaigns = all.where((c) => c.charityId == charityId).toList(growable: false);
   final stats = _buildStats(campaigns);

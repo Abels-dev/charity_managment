@@ -82,7 +82,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: AppTheme.spacing16),
-                  // Avatar
                   CircleAvatar(
                     radius: 48,
                     backgroundColor: AppColors.primaryBg,
@@ -95,13 +94,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: AppTheme.spacing16),
-                  // Name
                   Text(
                     user.name,
                     style: AppTextStyles.title,
                   ),
                   const SizedBox(height: AppTheme.spacing8),
-                  // Role Badge
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
@@ -115,7 +112,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   ),
                   const SizedBox(height: AppTheme.spacing32),
 
-                  // Edit Profile Form
                   AppCard(
                     padding: const EdgeInsets.all(AppTheme.spacing24),
                     child: Column(

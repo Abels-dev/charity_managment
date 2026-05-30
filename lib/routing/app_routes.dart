@@ -7,7 +7,6 @@ class AppRoutes {
   static const roleSelection = '/auth/role-selection';
   static const login = '/auth/login';
   static const register = '/auth/register';
-  // Forgot password removed from mobile flow
   static const charityInfo = '/auth/charity-info';
 
   static const campaigns = '/campaigns';

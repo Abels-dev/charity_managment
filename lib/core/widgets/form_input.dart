@@ -15,6 +15,7 @@ class FormInput extends StatelessWidget {
   final int maxLines;
   final int minLines;
   final TextInputAction? textInputAction;
+  final ValueChanged<String>? onFieldSubmitted;
   final EdgeInsets? padding;
   final bool readOnly;
   final VoidCallback? onTap;
@@ -32,6 +33,7 @@ class FormInput extends StatelessWidget {
     this.maxLines = 1,
     this.minLines = 1,
     this.textInputAction,
+    this.onFieldSubmitted,
     this.padding,
     this.readOnly = false,
     this.onTap,
@@ -59,6 +61,7 @@ class FormInput extends StatelessWidget {
             minLines: minLines,
             maxLines: maxLines,
             textInputAction: textInputAction,
+            onFieldSubmitted: onFieldSubmitted,
             readOnly: readOnly,
             onTap: onTap,
             style: AppTextStyles.body,

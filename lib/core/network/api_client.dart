@@ -26,16 +26,12 @@ final dioProvider = Provider<Dio>((ref) {
     ),
   );
 
-  // CookieManager is not supported on Web. Browser cookies are handled by
-  // the platform when withCredentials is enabled.
   if (!kIsWeb) {
     dio.interceptors.add(CookieManager(cookieJar));
   }
 
-  // AuthInterceptor handles 401 errors (clears local state on session expiry).
   dio.interceptors.add(AuthInterceptor(ref));
 
-  // Log all requests/responses in non-production builds.
   if (!env.isProduction) {
     dio.interceptors.add(LogInterceptor(
       requestBody: true,

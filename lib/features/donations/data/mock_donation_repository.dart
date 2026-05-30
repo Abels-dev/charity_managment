@@ -16,7 +16,12 @@ class MockDonationRepository implements DonationRepository {
   }
 
   @override
-  Future<DonationCheckoutSession> createDonationCheckout(Donation donation) async {
+  Future<DonationCheckoutSession> createDonationCheckout(
+    Donation donation, {
+    String? donorName,
+    String? donorEmail,
+    String? returnUrl,
+  }) async {
     await Future<void>.delayed(const Duration(milliseconds: 900));
     _donations.insert(0, donation);
     return DonationCheckoutSession(

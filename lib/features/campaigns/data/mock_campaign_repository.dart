@@ -120,7 +120,7 @@ class MockCampaignRepository implements CampaignRepository {
       charityName: input.charityName,
       title: input.title.trim(),
       description: input.description.trim(),
-      imageUrl: input.imageUrl.trim(),
+      imageUrl: 'https://image.com',
       targetAmount: input.targetAmount,
       currentAmount: 0,
       donorCount: 0,
@@ -129,7 +129,7 @@ class MockCampaignRepository implements CampaignRepository {
       createdAt: now,
       updatedAt: now,
       status: CampaignStatus.active,
-      category: CampaignCategory.emergency,
+      category: _mapCategory(input.category),
     );
 
     _campaigns.add(created);
@@ -153,7 +153,7 @@ class MockCampaignRepository implements CampaignRepository {
     final updated = existing.copyWith(
       title: input.title.trim(),
       description: input.description.trim(),
-      imageUrl: input.imageUrl.trim(),
+      imageUrl: existing.imageUrl,
       targetAmount: input.targetAmount,
       endDate: input.endDate,
       updatedAt: DateTime.now(),
@@ -212,5 +212,21 @@ class MockCampaignRepository implements CampaignRepository {
   String _nextId() {
     final stamp = DateTime.now().millisecondsSinceEpoch;
     return 'cmp_$stamp';
+  }
+
+  CampaignCategory _mapCategory(String value) {
+    switch (value.toUpperCase()) {
+      case 'HEALTH':
+        return CampaignCategory.health;
+      case 'FOOD_SUPPORT':
+        return CampaignCategory.food;
+      case 'EMERGENCY':
+        return CampaignCategory.emergency;
+      case 'ENVIRONMENT':
+        return CampaignCategory.environment;
+      case 'EDUCATION':
+      default:
+        return CampaignCategory.education;
+    }
   }
 }

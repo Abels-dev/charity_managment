@@ -3,7 +3,6 @@ import 'app_colors.dart';
 import 'app_text_styles.dart';
 
 class AppTheme {
-  // Spacing (4pt base scale)
   static const double spacing4 = 4.0;
   static const double spacing8 = 8.0;
   static const double spacing12 = 12.0;
@@ -12,7 +11,6 @@ class AppTheme {
   static const double spacing32 = 32.0;
   static const double spacing48 = 48.0;
 
-  // Border Radius
   static const double radiusSm = 8.0;
   static const double radiusMd = 12.0;
   static const double radiusLg = 16.0;
@@ -25,7 +23,6 @@ class AppTheme {
   static const BorderRadius borderRadiusXl = BorderRadius.all(Radius.circular(radiusXl));
   static const BorderRadius borderRadiusPill = BorderRadius.all(Radius.circular(radiusPill));
 
-  // Shadows
   static final List<BoxShadow> cardShadow = [
     BoxShadow(
       color: AppColors.textPrimary.withValues(alpha: 0.05),
@@ -42,7 +39,6 @@ class AppTheme {
     ),
   ];
 
-  // ThemeData
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
@@ -72,7 +68,7 @@ class AppTheme {
           foregroundColor: AppColors.surface,
           textStyle: AppTextStyles.label,
           elevation: 0,
-          shadowColor: Colors.transparent, // Using custom shadows elsewhere if needed
+          shadowColor: Colors.transparent,
           shape: const RoundedRectangleBorder(
             borderRadius: borderRadiusMd,
           ),

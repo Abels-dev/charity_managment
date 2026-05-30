@@ -57,9 +57,6 @@ class ApiNotificationRepository implements NotificationRepository {
 
   @override
   Future<AppNotification> createNotification(AppNotification notification) async {
-    // The backend does not expose a public endpoint to create notifications.
-    // They are created internally by the system.
-    // Return the passed notification or throw unsupported.
     return notification;
   }
 
@@ -83,8 +80,6 @@ class ApiNotificationRepository implements NotificationRepository {
 
   @override
   Future<int> getUnreadCount(String userId) async {
-    // Backend doesn't have a specific unread count endpoint, so we derive it from the list.
-    // In a real app, you might want to add a /api/notifications/unread-count endpoint.
     try {
       final notifications = await getNotifications(userId);
       return notifications.where((n) => !n.isRead).length;

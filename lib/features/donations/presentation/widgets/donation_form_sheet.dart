@@ -66,21 +66,12 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
       (previous, next) async {
         if (next == null || !mounted) return;
 
-        print('=== CHAPA DEBUG ===');
-        print('actionUrl: ${next.actionUrl}');
-        print("fields: ${next.fields}");
-        print("tx_ref: ${next.fields['tx_ref']}");
-        print("checkout URL: https://checkout.chapa.co/checkout/payment/${next.fields['tx_ref']}");
-        print('===================');
-
-        // Prefer opening Chapa hosted checkout using tx_ref
         final txRef = next.fields['tx_ref']?.toString() ?? '';
         if (txRef.isNotEmpty) {
           final checkoutUrl = 'https://checkout.chapa.co/checkout/payment/$txRef';
           final uri = Uri.parse(checkoutUrl);
           await launchUrl(uri, mode: LaunchMode.externalApplication);
         } else {
-          // Fallback to actionUrl if tx_ref is not available
           final uri = Uri.tryParse(next.actionUrl);
           if (uri != null) {
             await launchUrl(uri, mode: LaunchMode.externalApplication);

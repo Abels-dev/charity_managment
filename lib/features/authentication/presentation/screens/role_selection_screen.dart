@@ -18,7 +18,7 @@ class RoleSelectionScreen extends ConsumerWidget {
     final controller = ref.read(authControllerProvider.notifier);
 
     return Scaffold(
-      backgroundColor: AppColors.surface, // #F8FAFC
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -40,7 +40,6 @@ class RoleSelectionScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: AppTheme.spacing16),
-              // Centered Title
               Text(
                 'Join as...',
                 style: AppTextStyles.display.copyWith(
@@ -50,7 +49,6 @@ class RoleSelectionScreen extends ConsumerWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppTheme.spacing8),
-              // Subtitle
               Text(
                 'Select how you want to use the platform',
                 style: AppTextStyles.body.copyWith(color: AppColors.textBody),
@@ -68,11 +66,10 @@ class RoleSelectionScreen extends ConsumerWidget {
                   ),
                 ),
 
-              // Donor Card
               _RoleCard(
                 title: 'I want to Donate',
                 subtitle: 'Browse campaigns and support causes you care about',
-                icon: Icons.volunteer_activism, // person/heart like
+                icon: Icons.volunteer_activism,
                 isSelected: authState.selectedRole == UserRole.donor,
                 onTap: () {
                   controller.selectRole(UserRole.donor);
@@ -81,11 +78,10 @@ class RoleSelectionScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppTheme.spacing16),
 
-              // Charity Card
               _RoleCard(
                 title: 'I represent a Charity',
                 subtitle: 'Create campaigns and manage donations for your organization',
-                icon: Icons.domain, // building/org
+                icon: Icons.domain,
                 isSelected: authState.selectedRole == UserRole.charityOrganization,
                 onTap: () {
                   controller.selectRole(UserRole.charityOrganization);
@@ -96,7 +92,6 @@ class RoleSelectionScreen extends ConsumerWidget {
               const SizedBox(height: AppTheme.spacing16),
 
               const Spacer(),
-              // Bottom login link
               TextButton(
                 onPressed: () => context.go(AppRoutes.login),
                 style: TextButton.styleFrom(
@@ -148,7 +143,7 @@ class _RoleCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppTheme.spacing24),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary.withValues(alpha: 0.05) : Colors.white,
-          borderRadius: AppTheme.borderRadiusLg, // 16px
+          borderRadius: AppTheme.borderRadiusLg,
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.border.withValues(alpha: 0.5),
             width: isSelected ? 2 : 1,

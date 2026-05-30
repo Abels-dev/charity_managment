@@ -15,7 +15,7 @@ import 'package:charity_managment/features/profile/presentation/providers/profil
 
 import 'package:charity_managment/features/bank_accounts/data/api_bank_account_repository.dart';
 import 'package:charity_managment/features/bank_accounts/presentation/providers/bank_account_repository_provider.dart';
-import 'package:charity_managment/features/bank_accounts/presentation/screens/bank_accounts_screen.dart' show showBankAccountFormDialog;
+import 'package:charity_managment/features/bank_accounts/presentation/screens/bank_accounts_screen.dart' show showBankAccountFormSheet;
 
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
@@ -52,10 +52,6 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Charity Profile View
-// ---------------------------------------------------------------------------
 
 class _CharityProfileView extends ConsumerStatefulWidget {
   const _CharityProfileView({required this.profile});
@@ -147,7 +143,6 @@ class _CharityProfileViewState extends ConsumerState<_CharityProfileView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // CARD 1 — Identity
             AppCard(
               padding: const EdgeInsets.all(AppTheme.spacing24),
               child: Column(
@@ -194,7 +189,6 @@ class _CharityProfileViewState extends ConsumerState<_CharityProfileView> {
             ),
             const SizedBox(height: AppTheme.spacing16),
 
-            // CARD 2 — About
             AppCard(
               padding: const EdgeInsets.all(AppTheme.spacing24),
               child: Column(
@@ -234,7 +228,6 @@ class _CharityProfileViewState extends ConsumerState<_CharityProfileView> {
             ),
             const SizedBox(height: AppTheme.spacing16),
 
-            // CARD 3 — Social Links
             AppCard(
               padding: const EdgeInsets.all(AppTheme.spacing24),
               child: Column(
@@ -288,7 +281,6 @@ class _CharityProfileViewState extends ConsumerState<_CharityProfileView> {
             ),
             const SizedBox(height: AppTheme.spacing16),
 
-            // CARD 4 — Bank Accounts
             AppCard(
               padding: const EdgeInsets.all(AppTheme.spacing24),
               child: Column(
@@ -311,7 +303,7 @@ class _CharityProfileViewState extends ConsumerState<_CharityProfileView> {
                           AppButton(
                             text: 'Add Bank Account',
                             type: AppButtonType.secondary,
-                            onPressed: () => showBankAccountFormDialog(context, ref),
+                            onPressed: () => showBankAccountFormSheet(context, ref),
                           ),
                         ],
                       );
@@ -342,18 +334,16 @@ class _CharityProfileViewState extends ConsumerState<_CharityProfileView> {
                 final notifier = ref.read(profileUpdateProvider.notifier);
                 
                 if (widget.profile.charityProfile == null) {
-                  // Creating Profile
                   await notifier.createCharityProfile(
                     organizationName: _nameController.text.trim(),
                     description: _descriptionController.text.trim(),
-                    documentPath: '', // Keeping signature intact
+                    documentPath: '',
                     logoPath: _logoController.text.trim(),
                     phone: _phoneController.text.trim(),
                     address: _addressController.text.trim(),
                     website: _websiteController.text.trim(),
                   );
                 } else {
-                  // Updating Profile
                   await notifier.updateCharityProfile(
                     CharityProfileUpdateInput(
                       organizationName: _nameController.text.trim(),
@@ -385,10 +375,6 @@ class _CharityProfileViewState extends ConsumerState<_CharityProfileView> {
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Donor Profile View (from previous redesign)
-// ---------------------------------------------------------------------------
 
 class _DonorProfileView extends ConsumerStatefulWidget {
   const _DonorProfileView({required this.profile});
@@ -444,7 +430,6 @@ class _DonorProfileViewState extends ConsumerState<_DonorProfileView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Top AppCard
             AppCard(
               padding: const EdgeInsets.all(AppTheme.spacing24),
               child: Column(
@@ -485,7 +470,6 @@ class _DonorProfileViewState extends ConsumerState<_DonorProfileView> {
             ),
             const SizedBox(height: AppTheme.spacing16),
 
-            // Impact AppCard
             AppCard(
               padding: const EdgeInsets.all(AppTheme.spacing24),
               child: Column(
@@ -515,7 +499,6 @@ class _DonorProfileViewState extends ConsumerState<_DonorProfileView> {
             ),
             const SizedBox(height: AppTheme.spacing16),
 
-            // Edit Profile AppCard
             AppCard(
               padding: const EdgeInsets.all(AppTheme.spacing24),
               child: Column(
@@ -608,10 +591,6 @@ class _DonorProfileViewState extends ConsumerState<_DonorProfileView> {
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Shared Components
-// ---------------------------------------------------------------------------
 
 class _StatTile extends StatelessWidget {
   const _StatTile({required this.label, required this.value});
