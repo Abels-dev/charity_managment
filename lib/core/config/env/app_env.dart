@@ -21,7 +21,7 @@ class AppEnv {
     const envRaw = String.fromEnvironment('APP_ENV', defaultValue: 'dev');
     const baseUrlRaw = String.fromEnvironment(
       'API_BASE_URL',
-      defaultValue: 'https://api.placeholder.local',
+      defaultValue: 'http://localhost:5000',
     );
 
     final env = switch (envRaw) {

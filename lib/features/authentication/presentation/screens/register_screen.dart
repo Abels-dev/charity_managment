@@ -5,13 +5,15 @@ import 'package:go_router/go_router.dart';
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:charity_managment/features/authentication/domain/models/auth_status.dart';
 import 'package:charity_managment/features/authentication/presentation/utils/auth_validators.dart';
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_error_message.dart';
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_form_card.dart';
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_primary_button.dart';
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_screen_shell.dart';
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_text_field.dart';
 import 'package:charity_managment/models/user_role.dart';
 import 'package:charity_managment/routing/app_routes.dart';
+
+import 'package:charity_managment/core/widgets/app_button.dart';
+import 'package:charity_managment/core/widgets/app_card.dart';
+import 'package:charity_managment/core/widgets/form_input.dart';
+import 'package:charity_managment/core/theme/app_theme.dart';
+import 'package:charity_managment/core/theme/app_text_styles.dart';
+import 'package:charity_managment/core/theme/app_colors.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -63,76 +65,111 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     final state = ref.watch(authControllerProvider);
 
-    return AuthScreenShell(
-      title: 'Create account',
-      subtitle: 'Register as ${state.selectedRole?.label ?? 'your selected role'}.',
-      bottom: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('Already have an account?'),
-          TextButton(
-            onPressed: () => context.go(AppRoutes.login),
-            child: const Text('Log in'),
-          ),
-        ],
-      ),
-      child: AuthFormCard(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              if (state.errorMessage != null) ...[
-                AuthErrorMessage(message: state.errorMessage!),
-                const SizedBox(height: 12),
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppTheme.spacing24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Create account',
+                  style: AppTextStyles.display,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppTheme.spacing8),
+                Text(
+                  'Register as ${state.selectedRole?.label ?? 'your selected role'}.',
+                  style: AppTextStyles.body,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppTheme.spacing32),
+                AppCard(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (state.errorMessage != null) ...[
+                          Container(
+                            padding: const EdgeInsets.all(AppTheme.spacing12),
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withValues(alpha: 0.1),
+                              borderRadius: AppTheme.borderRadiusSm,
+                            ),
+                            child: Text(
+                              state.errorMessage!,
+                              style: AppTextStyles.body.copyWith(color: AppColors.error),
+                            ),
+                          ),
+                          const SizedBox(height: AppTheme.spacing16),
+                        ],
+                        FormInput(
+                          controller: _nameController,
+                          label: 'Full name',
+                          hint: 'Enter your full name',
+                          prefixIcon: const Icon(Icons.person_outline),
+                          validator: AuthValidators.fullName,
+                        ),
+                        const SizedBox(height: AppTheme.spacing16),
+                        FormInput(
+                          controller: _emailController,
+                          label: 'Email',
+                          hint: 'Enter your email',
+                          keyboardType: TextInputType.emailAddress,
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          validator: AuthValidators.email,
+                        ),
+                        const SizedBox(height: AppTheme.spacing16),
+                        FormInput(
+                          controller: _passwordController,
+                          label: 'Password',
+                          hint: 'Create a password',
+                          obscureText: true,
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          validator: AuthValidators.password,
+                        ),
+                        const SizedBox(height: AppTheme.spacing16),
+                        FormInput(
+                          controller: _confirmPasswordController,
+                          label: 'Confirm password',
+                          hint: 'Confirm your password',
+                          obscureText: true,
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          validator: (value) =>
+                              AuthValidators.confirmPassword(value, _passwordController.text),
+                        ),
+                        const SizedBox(height: AppTheme.spacing24),
+                        AppButton(
+                          text: 'Register',
+                          isLoading: state.isSubmitting,
+                          onPressed: _submit,
+                        ),
+                        const SizedBox(height: AppTheme.spacing8),
+                        AppButton(
+                          text: 'Change role',
+                          type: AppButtonType.outline,
+                          onPressed: () => context.go(AppRoutes.roleSelection),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spacing24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Already have an account?', style: AppTextStyles.body),
+                    TextButton(
+                      onPressed: () => context.go(AppRoutes.login),
+                      child: const Text('Log in'),
+                    ),
+                  ],
+                ),
               ],
-              AuthTextField(
-                controller: _nameController,
-                label: 'Full name',
-                textInputAction: TextInputAction.next,
-                prefixIcon: Icons.person_outline,
-                validator: AuthValidators.fullName,
-              ),
-              const SizedBox(height: 12),
-              AuthTextField(
-                controller: _emailController,
-                label: 'Email',
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-                prefixIcon: Icons.email_outlined,
-                validator: AuthValidators.email,
-              ),
-              const SizedBox(height: 12),
-              AuthTextField(
-                controller: _passwordController,
-                label: 'Password',
-                obscureText: true,
-                textInputAction: TextInputAction.next,
-                prefixIcon: Icons.lock_outline,
-                validator: AuthValidators.password,
-              ),
-              const SizedBox(height: 12),
-              AuthTextField(
-                controller: _confirmPasswordController,
-                label: 'Confirm password',
-                obscureText: true,
-                textInputAction: TextInputAction.done,
-                prefixIcon: Icons.lock_outline,
-                validator: (value) =>
-                    AuthValidators.confirmPassword(value, _passwordController.text),
-                onFieldSubmitted: (_) => _submit(),
-              ),
-              const SizedBox(height: 20),
-              AuthPrimaryButton(
-                label: 'Register',
-                isLoading: state.isSubmitting,
-                onPressed: _submit,
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => context.go(AppRoutes.roleSelection),
-                child: const Text('Change role'),
-              ),
-            ],
+            ),
           ),
         ),
       ),

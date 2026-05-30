@@ -6,11 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'cookie_jar_provider.dart';
 import 'token_storage.dart';
 
-/// Handles 401 Unauthorized responses by clearing the stored cookies so
-/// the user is not stuck in a broken session state.
-///
-/// Token transport is handled automatically by [CookieManager] — this
-/// interceptor no longer injects an Authorization header.
 class AuthInterceptor extends Interceptor {
   AuthInterceptor(this.ref);
 
@@ -28,8 +23,6 @@ class AuthInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.response?.statusCode == 401) {
-      // Clear all stored cookies so the next bootstrap will not try to use
-      // an expired / invalid session.
       ref.read(cookieJarProvider).deleteAll();
       ref.read(tokenStorageProvider).clearToken();
       developer.log(

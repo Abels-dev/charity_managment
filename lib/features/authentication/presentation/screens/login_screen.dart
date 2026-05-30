@@ -5,13 +5,15 @@ import 'package:go_router/go_router.dart';
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:charity_managment/features/authentication/domain/models/auth_status.dart';
 import 'package:charity_managment/features/authentication/presentation/utils/auth_validators.dart';
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_error_message.dart';
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_form_card.dart';
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_primary_button.dart';
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_screen_shell.dart';
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_text_field.dart';
 import 'package:charity_managment/models/user_role.dart';
 import 'package:charity_managment/routing/app_routes.dart';
+
+import 'package:charity_managment/core/widgets/app_button.dart';
+import 'package:charity_managment/core/widgets/app_card.dart';
+import 'package:charity_managment/core/widgets/form_input.dart';
+import 'package:charity_managment/core/theme/app_theme.dart';
+import 'package:charity_managment/core/theme/app_text_styles.dart';
+import 'package:charity_managment/core/theme/app_colors.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -58,66 +60,100 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     final state = ref.watch(authControllerProvider);
 
-    return AuthScreenShell(
-      title: 'Log in',
-      subtitle: 'Continue as ${state.selectedRole?.label ?? 'your selected role'}.',
-      bottom: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text("Don't have an account?"),
-          TextButton(
-            onPressed: () => context.go(AppRoutes.register),
-            child: const Text('Register'),
-          ),
-        ],
-      ),
-      child: AuthFormCard(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (state.errorMessage != null) ...[
-                AuthErrorMessage(message: state.errorMessage!),
-                const SizedBox(height: 12),
-              ],
-              AuthTextField(
-                controller: _emailController,
-                label: 'Email',
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-                prefixIcon: Icons.email_outlined,
-                validator: AuthValidators.email,
-              ),
-              const SizedBox(height: 12),
-              AuthTextField(
-                controller: _passwordController,
-                label: 'Password',
-                obscureText: true,
-                textInputAction: TextInputAction.done,
-                prefixIcon: Icons.lock_outline,
-                validator: AuthValidators.password,
-                onFieldSubmitted: (_) => _submit(),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => context.go(AppRoutes.forgotPassword),
-                  child: const Text('Forgot password?'),
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppTheme.spacing24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Log in',
+                  style: AppTextStyles.display,
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 8),
-              AuthPrimaryButton(
-                label: 'Log in',
-                isLoading: state.isSubmitting,
-                onPressed: _submit,
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => context.go(AppRoutes.roleSelection),
-                child: const Text('Change role'),
-              ),
-            ],
+                const SizedBox(height: AppTheme.spacing8),
+                Text(
+                  'Continue as ${state.selectedRole?.label ?? 'your selected role'}.',
+                  style: AppTextStyles.body,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppTheme.spacing32),
+                AppCard(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (state.errorMessage != null) ...[
+                          Container(
+                            padding: const EdgeInsets.all(AppTheme.spacing12),
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withValues(alpha: 0.1),
+                              borderRadius: AppTheme.borderRadiusSm,
+                            ),
+                            child: Text(
+                              state.errorMessage!,
+                              style: AppTextStyles.body.copyWith(color: AppColors.error),
+                            ),
+                          ),
+                          const SizedBox(height: AppTheme.spacing16),
+                        ],
+                        FormInput(
+                          controller: _emailController,
+                          label: 'Email',
+                          hint: 'Enter your email',
+                          keyboardType: TextInputType.emailAddress,
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          validator: AuthValidators.email,
+                        ),
+                        const SizedBox(height: AppTheme.spacing16),
+                        FormInput(
+                          controller: _passwordController,
+                          label: 'Password',
+                          hint: 'Enter your password',
+                          obscureText: true,
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          validator: AuthValidators.password,
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () => context.go(AppRoutes.forgotPassword),
+                            child: const Text('Forgot password?'),
+                          ),
+                        ),
+                        const SizedBox(height: AppTheme.spacing16),
+                        AppButton(
+                          text: 'Log in',
+                          isLoading: state.isSubmitting,
+                          onPressed: _submit,
+                        ),
+                        const SizedBox(height: AppTheme.spacing8),
+                        AppButton(
+                          text: 'Change role',
+                          type: AppButtonType.outline,
+                          onPressed: () => context.go(AppRoutes.roleSelection),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spacing24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Don't have an account?", style: AppTextStyles.body),
+                    TextButton(
+                      onPressed: () => context.go(AppRoutes.register),
+                      child: const Text('Register'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
