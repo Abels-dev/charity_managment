@@ -8,13 +8,15 @@ import 'package:charity_managment/features/campaigns/presentation/providers/camp
 import 'package:charity_managment/features/campaigns/presentation/providers/campaigns_list_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_card.dart';
 import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_category_filter.dart';
-import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_list_loading.dart';
 import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_search_bar.dart';
 import 'package:charity_managment/models/campaign.dart';
 import 'package:charity_managment/routing/app_routes.dart';
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
-import 'package:charity_managment/shared/widgets/empty_state.dart';
+
+import 'package:charity_managment/core/widgets/empty_state.dart';
+import 'package:charity_managment/core/widgets/loading_skeleton.dart';
+import 'package:charity_managment/core/theme/app_theme.dart';
 
 class CampaignsScreen extends ConsumerStatefulWidget {
   const CampaignsScreen({super.key});
@@ -60,39 +62,45 @@ class _CampaignsScreenState extends ConsumerState<CampaignsScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CampaignSearchBar(
-            controller: _searchController,
-            onChanged: filterController.setSearchQuery,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
+            child: CampaignSearchBar(
+              controller: _searchController,
+              onChanged: filterController.setSearchQuery,
+            ),
           ),
-          const SizedBox(height: 12),
-          CampaignCategoryFilter(
-            selectedCategory: filters.category,
-            onSelected: (CampaignCategory? category) {
-              filterController.setCategory(category);
-            },
+          const SizedBox(height: AppTheme.spacing12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16),
+            child: CampaignCategoryFilter(
+              selectedCategory: filters.category,
+              onSelected: (CampaignCategory? category) {
+                filterController.setCategory(category);
+              },
+            ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppTheme.spacing16),
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refresh,
               child: campaignsAsync.when(
-                loading: () => const CampaignListLoading(),
+                loading: () => ListView.separated(
+                  padding: const EdgeInsets.all(AppTheme.spacing16),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: 4,
+                  separatorBuilder: (_, index) => const SizedBox(height: AppTheme.spacing16),
+                  itemBuilder: (_, index) => const LoadingSkeleton(height: 200, borderRadius: AppTheme.radiusLg),
+                ),
                 error: (error, _) {
                   return ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
                       EmptyState(
+                        icon: Icons.error_outline,
                         title: 'Unable to load campaigns',
-                        subtitle: error.toString(),
-                      ),
-                      const SizedBox(height: 12),
-                      Center(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            ref.invalidate(campaignsListProvider);
-                          },
-                          child: const Text('Retry'),
-                        ),
+                        message: error.toString(),
+                        actionLabel: 'Retry',
+                        onAction: () => ref.invalidate(campaignsListProvider),
                       ),
                     ],
                   );
@@ -101,19 +109,27 @@ class _CampaignsScreenState extends ConsumerState<CampaignsScreen> {
                   if (campaigns.isEmpty) {
                     return ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [
+                      children: [
                         EmptyState(
+                          icon: Icons.search_off,
                           title: 'No campaigns found',
-                          subtitle: 'Try changing keyword or category filter.',
+                          message: 'Try changing keyword or category filter.',
+                          actionLabel: 'Clear filters',
+                          onAction: () {
+                            _searchController.clear();
+                            filterController.setSearchQuery('');
+                            filterController.setCategory(null);
+                          },
                         ),
                       ],
                     );
                   }
 
                   return ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16, vertical: AppTheme.spacing8),
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: campaigns.length,
-                    separatorBuilder: (_, index) => const SizedBox(height: 12),
+                    separatorBuilder: (_, index) => const SizedBox(height: AppTheme.spacing16),
                     itemBuilder: (context, index) {
                       final campaign = campaigns[index];
                       final campaignId = campaign.id;

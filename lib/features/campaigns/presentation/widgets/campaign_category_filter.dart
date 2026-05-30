@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:charity_managment/models/campaign.dart';
+import 'package:charity_managment/core/widgets/category_badge.dart';
 
 class CampaignCategoryFilter extends StatelessWidget {
   const CampaignCategoryFilter({
@@ -20,19 +21,23 @@ class CampaignCategoryFilter extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: const Text('All'),
-              selected: selectedCategory == null,
-              onSelected: (_) => onSelected(null),
+            child: GestureDetector(
+              onTap: () => onSelected(null),
+              child: Opacity(
+                opacity: selectedCategory == null ? 1.0 : 0.5,
+                child: const CategoryBadge(category: 'all'),
+              ),
             ),
           ),
           for (final category in CampaignCategory.values)
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(category.label),
-                selected: selectedCategory == category,
-                onSelected: (_) => onSelected(category),
+              child: GestureDetector(
+                onTap: () => onSelected(category),
+                child: Opacity(
+                  opacity: selectedCategory == category ? 1.0 : 0.5,
+                  child: CategoryBadge(category: category.name),
+                ),
               ),
             ),
         ],

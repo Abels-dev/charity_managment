@@ -4,6 +4,12 @@ import 'package:charity_managment/features/campaigns/presentation/utils/campaign
 import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_status_badge.dart';
 import 'package:charity_managment/models/campaign.dart';
 
+import 'package:charity_managment/core/widgets/app_card.dart';
+import 'package:charity_managment/core/widgets/category_badge.dart';
+import 'package:charity_managment/core/theme/app_theme.dart';
+import 'package:charity_managment/core/theme/app_text_styles.dart';
+import 'package:charity_managment/core/theme/app_colors.dart';
+
 class CampaignCard extends StatelessWidget {
   const CampaignCard({
     super.key,
@@ -20,59 +26,94 @@ class CampaignCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      campaign.title,
-                      style: Theme.of(context).textTheme.titleMedium,
+    return AppCard(
+      onTap: onTap,
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(AppTheme.spacing16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CategoryBadge(category: campaign.category.label),
+                              const SizedBox(width: AppTheme.spacing8),
+                              CampaignStatusBadge(status: campaign.status),
+                            ],
+                          ),
+                          const SizedBox(height: AppTheme.spacing8),
+                          Text(
+                            campaign.title,
+                            style: AppTextStyles.title,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  CampaignStatusBadge(status: campaign.status),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    icon: Icon(
-                      isFollowed ? Icons.favorite : Icons.favorite_border,
-                      color: isFollowed ? colorScheme.error : null,
+                    IconButton(
+                      icon: Icon(
+                        isFollowed ? Icons.favorite : Icons.favorite_border,
+                        color: isFollowed ? AppColors.error : AppColors.textBody,
+                      ),
+                      onPressed: onFollowTap,
                     ),
-                    onPressed: onFollowTap,
+                  ],
+                ),
+                const SizedBox(height: AppTheme.spacing8),
+                Text(
+                  campaign.summary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.body,
+                ),
+                const SizedBox(height: AppTheme.spacing12),
+                Row(
+                  children: [
+                    const Icon(Icons.business, size: 16, color: AppColors.textBody),
+                    const SizedBox(width: AppTheme.spacing4),
+                    Text(
+                      campaign.organizationName,
+                      style: AppTextStyles.label.copyWith(color: AppColors.textBody),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppTheme.spacing16),
+                ClipRRect(
+                  borderRadius: AppTheme.borderRadiusPill,
+                  child: LinearProgressIndicator(
+                    value: campaign.progress,
+                    backgroundColor: AppColors.border,
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    minHeight: 8,
                   ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                campaign.summary,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 10),
-              Text('By ${campaign.organizationName}'),
-              const SizedBox(height: 4),
-              Text(
-                campaign.category.label,
-                style: TextStyle(color: colorScheme.primary),
-              ),
-              const SizedBox(height: 12),
-              LinearProgressIndicator(value: campaign.progress),
-              const SizedBox(height: 8),
-              Text(
-                '${CampaignFormatters.percent(campaign.progress)} funded • ${CampaignFormatters.money(campaign.currentAmount)} / ${CampaignFormatters.money(campaign.goalAmount)}',
-              ),
-            ],
+                ),
+                const SizedBox(height: AppTheme.spacing8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${CampaignFormatters.percent(campaign.progress)} funded',
+                      style: AppTextStyles.label.copyWith(color: AppColors.primary),
+                    ),
+                    Text(
+                      '${CampaignFormatters.money(campaign.currentAmount)} / ${CampaignFormatters.money(campaign.goalAmount)}',
+                      style: AppTextStyles.label.copyWith(color: AppColors.textBody),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

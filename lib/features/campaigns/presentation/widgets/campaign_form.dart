@@ -1,9 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_primary_button.dart';
-import 'package:charity_managment/features/authentication/presentation/widgets/auth_text_field.dart';
+import 'package:charity_managment/core/theme/app_colors.dart';
+import 'package:charity_managment/core/theme/app_text_styles.dart';
+import 'package:charity_managment/core/theme/app_theme.dart';
+import 'package:charity_managment/core/widgets/app_button.dart';
+import 'package:charity_managment/core/widgets/app_card.dart';
+import 'package:charity_managment/core/widgets/category_badge.dart';
+import 'package:charity_managment/core/widgets/dashed_card.dart';
+import 'package:charity_managment/core/widgets/form_input.dart';
+import 'package:charity_managment/models/campaign.dart';
 
-class CampaignForm extends StatelessWidget {
+class CampaignForm extends StatefulWidget {
   const CampaignForm({
     super.key,
     required this.formKey,
@@ -49,81 +57,158 @@ class CampaignForm extends StatelessWidget {
   }
 
   @override
+  State<CampaignForm> createState() => _CampaignFormState();
+}
+
+class _CampaignFormState extends State<CampaignForm> {
+  String _selectedCategory = 'education';
+
+  @override
   Widget build(BuildContext context) {
-    return Form(
-      key: formKey,
-      child: Column(
-        children: [
-          if (errorMessage != null) ...[
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.errorContainer,
-                borderRadius: BorderRadius.circular(8),
+    return AppCard(
+      padding: const EdgeInsets.all(AppTheme.spacing16),
+      child: Form(
+        key: widget.formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.errorMessage != null) ...[
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(widget.errorMessage!),
               ),
-              child: Text(errorMessage!),
+            ],
+            FormInput(
+              controller: widget.titleController,
+              label: 'Title',
+              textInputAction: TextInputAction.next,
+              validator: _required,
+            ),
+            const SizedBox(height: AppTheme.spacing16),
+            FormInput(
+              controller: widget.descriptionController,
+              label: 'Description',
+              minLines: 3,
+              maxLines: 5,
+              textInputAction: TextInputAction.newline,
+              validator: _required,
+            ),
+            const SizedBox(height: AppTheme.spacing16),
+            FormInput(
+              controller: widget.targetAmountController,
+              label: 'Target Amount (USD)',
+              keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.next,
+              validator: _amount,
+            ),
+            const SizedBox(height: AppTheme.spacing16),
+            Text(
+              'Category',
+              style: AppTextStyles.label.copyWith(color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: AppTheme.spacing8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: CampaignCategory.values.map((cat) {
+                  final catName = cat.name.toLowerCase();
+                  final isSelected = _selectedCategory == catName;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: GestureDetector(
+                      onTap: widget.isLocked
+                          ? null
+                          : () {
+                              setState(() => _selectedCategory = catName);
+                            },
+                      child: Opacity(
+                        opacity: isSelected ? 1.0 : 0.5,
+                        child: CategoryBadge(category: catName),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacing16),
+            Text(
+              'Campaign Image',
+              style: AppTextStyles.label.copyWith(color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: AppTheme.spacing8),
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: widget.imageUrlController,
+              builder: (context, value, child) {
+                final hasImage = value.text.isNotEmpty;
+                return DashedCard(
+                  onTap: widget.isLocked ? null : widget.onPickImage,
+                  padding: hasImage ? EdgeInsets.zero : null,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 160,
+                    child: hasImage
+                        ? ClipRRect(
+                            borderRadius: AppTheme.borderRadiusLg,
+                            child: value.text.startsWith('http')
+                                ? Image.network(value.text, fit: BoxFit.cover)
+                                : Image.file(File(value.text), fit: BoxFit.cover),
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.cloud_upload_outlined,
+                                size: 40,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(height: AppTheme.spacing8),
+                              Text(
+                                'Tap to upload image',
+                                style: AppTextStyles.body,
+                              ),
+                            ],
+                          ),
+                  ),
+                );
+              },
+            ),
+            // Hidden field to keep validation for URL
+            Offstage(
+              child: TextFormField(
+                controller: widget.imageUrlController,
+                validator: _url,
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacing16),
+            FormInput(
+              label: 'Start Date',
+              controller: TextEditingController(text: CampaignForm.dateText(widget.startDate)),
+              readOnly: true,
+              onTap: (widget.readOnlyStartDate || widget.isLocked) ? null : widget.onPickStartDate,
+              suffixIcon: const Icon(Icons.calendar_today, size: 18),
+            ),
+            const SizedBox(height: AppTheme.spacing16),
+            FormInput(
+              label: 'End Date',
+              controller: TextEditingController(text: CampaignForm.dateText(widget.endDate)),
+              readOnly: true,
+              onTap: widget.isLocked ? null : widget.onPickEndDate,
+              suffixIcon: const Icon(Icons.calendar_today, size: 18),
+            ),
+            const SizedBox(height: AppTheme.spacing24),
+            AppButton(
+              text: widget.submitLabel,
+              isLoading: widget.isSubmitting,
+              onPressed: widget.isLocked ? null : widget.onSubmit,
             ),
           ],
-          AuthTextField(
-            controller: titleController,
-            label: 'Title',
-            textInputAction: TextInputAction.next,
-            validator: _required,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: descriptionController,
-            minLines: 3,
-            maxLines: 5,
-            textInputAction: TextInputAction.newline,
-            decoration: const InputDecoration(labelText: 'Description'),
-            validator: _required,
-          ),
-          const SizedBox(height: 12),
-          AuthTextField(
-            controller: targetAmountController,
-            label: 'Target Amount (USD)',
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.next,
-            validator: _amount,
-          ),
-          const SizedBox(height: 12),
-          AuthTextField(
-            controller: imageUrlController,
-            label: 'Image path or URL',
-            textInputAction: TextInputAction.next,
-            validator: _url,
-          ),
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: OutlinedButton.icon(
-              onPressed: onPickImage,
-              icon: const Icon(Icons.image_outlined),
-              label: const Text('Choose image'),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _DateButton(
-            label: 'Start Date',
-            value: dateText(startDate),
-            onTap: (readOnlyStartDate || isLocked) ? null : onPickStartDate,
-          ),
-          const SizedBox(height: 10),
-          _DateButton(
-            label: 'End Date',
-            value: dateText(endDate),
-            onTap: isLocked ? null : onPickEndDate,
-          ),
-          const SizedBox(height: 18),
-          AuthPrimaryButton(
-            label: submitLabel,
-            isLoading: isSubmitting,
-            onPressed: isLocked ? null : onSubmit,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -152,32 +237,5 @@ class CampaignForm extends StatelessWidget {
       return 'Enter a valid URL';
     }
     return null;
-  }
-}
-
-class _DateButton extends StatelessWidget {
-  const _DateButton({
-    required this.label,
-    required this.value,
-    required this.onTap,
-  });
-
-  final String label;
-  final String value;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: onTap,
-      child: Row(
-        children: [
-          Expanded(
-            child: Text('$label: $value'),
-          ),
-          const Icon(Icons.calendar_today, size: 18),
-        ],
-      ),
-    );
   }
 }

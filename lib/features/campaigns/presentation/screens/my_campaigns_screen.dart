@@ -8,7 +8,9 @@ import 'package:charity_managment/features/campaigns/presentation/widgets/my_cam
 import 'package:charity_managment/routing/app_routes.dart';
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
-import 'package:charity_managment/shared/widgets/empty_state.dart';
+import 'package:charity_managment/core/widgets/empty_state.dart';
+import 'package:charity_managment/core/widgets/loading_skeleton.dart';
+import 'package:charity_managment/core/theme/app_theme.dart';
 
 class MyCampaignsScreen extends ConsumerWidget {
   const MyCampaignsScreen({super.key});
@@ -67,18 +69,19 @@ class MyCampaignsScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => _refresh(ref),
         child: myCampaignsAsync.when(
-          loading: () => ListView(
+          loading: () => ListView.separated(
             physics: const AlwaysScrollableScrollPhysics(),
-            children: const [
-              SizedBox(height: 180, child: Center(child: CircularProgressIndicator())),
-            ],
+            itemCount: 4,
+            separatorBuilder: (_, index) => const SizedBox(height: 12),
+            itemBuilder: (_, index) => const LoadingSkeleton(height: 140, borderRadius: AppTheme.radiusLg),
           ),
           error: (error, _) => ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
               EmptyState(
+                icon: Icons.error_outline,
                 title: 'Unable to load your campaigns',
-                subtitle: error.toString(),
+                message: error.toString(),
               ),
             ],
           ),
@@ -88,8 +91,9 @@ class MyCampaignsScreen extends ConsumerWidget {
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   const EmptyState(
+                    icon: Icons.campaign_outlined,
                     title: 'No campaigns yet',
-                    subtitle: 'Create your first campaign to start raising support.',
+                    message: 'Create your first campaign to start raising support.',
                   ),
                   const SizedBox(height: 12),
                   Center(
