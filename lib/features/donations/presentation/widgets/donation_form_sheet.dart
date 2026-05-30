@@ -63,18 +63,34 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
 
     _checkoutSub = ref.listenManual<DonationCheckoutSession?>(
       donationCheckoutSessionProvider,
-      (previous, next) {
+      (previous, next) async {
         if (next == null || !mounted) return;
 
-        final uri = Uri.tryParse(next.actionUrl);
-        if (uri != null) {
-          launchUrl(uri, mode: LaunchMode.externalApplication);
+        print('=== CHAPA DEBUG ===');
+        print('actionUrl: ${next.actionUrl}');
+        print("fields: ${next.fields}");
+        print("tx_ref: ${next.fields['tx_ref']}");
+        print("checkout URL: https://checkout.chapa.co/checkout/payment/${next.fields['tx_ref']}");
+        print('===================');
+
+        // Prefer opening Chapa hosted checkout using tx_ref
+        final txRef = next.fields['tx_ref']?.toString() ?? '';
+        if (txRef.isNotEmpty) {
+          final checkoutUrl = 'https://checkout.chapa.co/checkout/payment/$txRef';
+          final uri = Uri.parse(checkoutUrl);
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          // Fallback to actionUrl if tx_ref is not available
+          final uri = Uri.tryParse(next.actionUrl);
+          if (uri != null) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Checkout ready. Open ${next.actionUrl} to complete payment.'),
-            duration: const Duration(seconds: 6),
+          const SnackBar(
+            content: Text('Redirecting to payment...'),
+            duration: Duration(seconds: 6),
           ),
         );
 
@@ -133,7 +149,7 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
     final isLoading = submission.isLoading;
     final mediaQuery = MediaQuery.of(context);
 
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.only(
         left: AppTheme.spacing24,
         right: AppTheme.spacing24,
@@ -143,7 +159,6 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
       child: Form(
         key: _formKey,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(

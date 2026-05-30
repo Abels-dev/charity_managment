@@ -76,7 +76,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: AppTheme.spacing8),
                 Text(
-                  'Continue as ${state.selectedRole?.label ?? 'your selected role'}.',
+                  'Sign in with your email and password to continue.',
                   style: AppTextStyles.body,
                   textAlign: TextAlign.center,
                 ),
@@ -118,13 +118,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           prefixIcon: const Icon(Icons.lock_outline),
                           validator: AuthValidators.password,
                         ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () => context.go(AppRoutes.forgotPassword),
-                            child: const Text('Forgot password?'),
-                          ),
-                        ),
+                        const SizedBox.shrink(),
                         const SizedBox(height: AppTheme.spacing16),
                         AppButton(
                           text: 'Log in',
@@ -147,7 +141,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     Text("Don't have an account?", style: AppTextStyles.body),
                     TextButton(
-                      onPressed: () => context.go(AppRoutes.register),
+                      onPressed: () => context.go(AppRoutes.roleSelection),
                       child: const Text('Register'),
                     ),
                   ],

@@ -21,7 +21,7 @@ class AppEnv {
     const envRaw = String.fromEnvironment('APP_ENV', defaultValue: 'dev');
     const baseUrlRaw = String.fromEnvironment(
       'API_BASE_URL',
-      defaultValue: 'http://localhost:5000',
+      defaultValue: 'https://charity-management-system-7p6s.onrender.com',
     );
 
     final env = switch (envRaw) {

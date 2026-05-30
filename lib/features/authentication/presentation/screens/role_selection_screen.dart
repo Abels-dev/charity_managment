@@ -89,12 +89,13 @@ class RoleSelectionScreen extends ConsumerWidget {
                 isSelected: authState.selectedRole == UserRole.charityOrganization,
                 onTap: () {
                   controller.selectRole(UserRole.charityOrganization);
-                  context.go(AppRoutes.register);
+                  context.go(AppRoutes.charityInfo);
                 },
               ),
-              
+
+              const SizedBox(height: AppTheme.spacing16),
+
               const Spacer(),
-              
               // Bottom login link
               TextButton(
                 onPressed: () => context.go(AppRoutes.login),

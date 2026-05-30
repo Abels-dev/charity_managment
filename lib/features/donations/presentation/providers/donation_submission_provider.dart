@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:developer' as developer;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -42,7 +43,19 @@ class DonationSubmissionController extends StateNotifier<AsyncValue<Donation?>> 
         donatedAt: DateTime.now(),
       );
 
-      final session = await repository.createDonationCheckout(donation);
+      // Pass donor details from profile so backend can populate chapa fields
+      final session = await repository.createDonationCheckout(
+        donation,
+        donorName: _ref.read(authControllerProvider).user?.fullName,
+        donorEmail: _ref.read(authControllerProvider).user?.email,
+      );
+
+      // Log checkout payload for debugging
+      developer.log('Donation checkout session received', name: 'donation', error: {
+        'actionUrl': session.actionUrl,
+        'txRef': session.txRef,
+        'fieldsCount': session.fields.length,
+      });
 
       _ref.read(donationCheckoutSessionProvider.notifier).state = session;
 

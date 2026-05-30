@@ -4,11 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import 'package:charity_managment/features/authentication/domain/models/auth_status.dart';
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
-import 'package:charity_managment/features/authentication/presentation/screens/forgot_password_screen.dart';
 import 'package:charity_managment/features/authentication/presentation/screens/login_screen.dart';
 import 'package:charity_managment/features/authentication/presentation/screens/onboarding_screen.dart';
 import 'package:charity_managment/features/authentication/presentation/screens/register_screen.dart';
 import 'package:charity_managment/features/authentication/presentation/screens/role_selection_screen.dart';
+import 'package:charity_managment/features/authentication/presentation/screens/charity_info_screen.dart';
 import 'package:charity_managment/features/authentication/presentation/screens/splash_screen.dart';
 import 'package:charity_managment/features/campaigns/presentation/screens/campaign_detail_screen.dart';
 import 'package:charity_managment/features/campaigns/presentation/screens/campaigns_screen.dart';
@@ -131,6 +131,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RoleSelectionScreen(),
       ),
       GoRoute(
+        path: AppRoutes.charityInfo,
+        builder: (context, state) => const CharityInfoScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.login,
         builder: (context, state) => const LoginScreen(),
       ),
@@ -138,10 +142,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.register,
         builder: (context, state) => const RegisterScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.forgotPassword,
-        builder: (context, state) => const ForgotPasswordScreen(),
-      ),
+      // Forgot password route removed
       GoRoute(
         path: AppRoutes.campaigns,
         builder: (context, state) => const CampaignsScreen(),
@@ -241,9 +242,9 @@ const _authFlowRoutes = {
   AppRoutes.splash,
   AppRoutes.onboarding,
   AppRoutes.roleSelection,
+  AppRoutes.charityInfo,
   AppRoutes.login,
   AppRoutes.register,
-  AppRoutes.forgotPassword,
 };
 
 const _protectedRoutes = {

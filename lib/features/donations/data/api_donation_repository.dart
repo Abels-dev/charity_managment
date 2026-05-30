@@ -71,12 +71,38 @@ class ApiDonationRepository implements DonationRepository {
   }
 
   @override
-  Future<DonationCheckoutSession> createDonationCheckout(Donation donation) async {
-    final response = await _dio.post('/api/campaign/${donation.campaignId}/donate', data: {
+  Future<DonationCheckoutSession> createDonationCheckout(
+    Donation donation, {
+    String? donorName,
+    String? donorEmail,
+    String? returnUrl,
+  }) async {
+    // Forward to the implementation that accepts payer details
+    return createDonationCheckoutWithPayer(
+      donation,
+      donorName: donorName,
+      donorEmail: donorEmail,
+      returnUrl: returnUrl,
+    );
+  }
+
+  // New overloaded implementation that accepts donor details and optional returnUrl
+  Future<DonationCheckoutSession> createDonationCheckoutWithPayer(
+    Donation donation, {
+    String? donorName,
+    String? donorEmail,
+    String? returnUrl,
+  }) async {
+    final payload = <String, dynamic>{
       'amount': donation.amount,
       'isAnonymous': donation.isAnonymous,
       'message': donation.message,
-    });
+      if (donorName != null) 'guestName': donorName,
+      if (donorEmail != null) 'guestEmail': donorEmail,
+      if (returnUrl != null) 'returnUrl': returnUrl,
+    };
+
+    final response = await _dio.post('/api/campaign/${donation.campaignId}/donate', data: payload);
 
     final data = _asMap(response.data['data']);
     final donationData = _asMap(data['donation']);
