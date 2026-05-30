@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:file_picker/file_picker.dart';
-import 'dart:convert' show base64;
 import 'dart:developer' as developer;
 
 import 'package:charity_managment/features/campaigns/presentation/providers/create_campaign_provider.dart';
@@ -23,17 +21,16 @@ class _CreateCampaignScreenState extends ConsumerState<CreateCampaignScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _targetAmountController = TextEditingController();
-  final _imageUrlController = TextEditingController();
 
   DateTime? _startDate;
   DateTime? _endDate;
+  String _selectedCategory = 'education';
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
     _targetAmountController.dispose();
-    _imageUrlController.dispose();
     super.dispose();
   }
 
@@ -65,39 +62,6 @@ class _CreateCampaignScreenState extends ConsumerState<CreateCampaignScreen> {
     }
   }
 
-  Future<void> _pickImage() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        withData: true, // Enable bytes for web
-      );
-      
-      if (result == null || result.files.isEmpty) return;
-      
-      final file = result.files.single;
-      
-      // For web, use bytes; for mobile, use path
-      if (file.bytes != null) {
-        // Web: Store bytes as base64
-        final base64Data = 'data:image/jpg;base64,' + base64.encode(file.bytes!).toString();
-        if (mounted) {
-          setState(() => _imageUrlController.text = base64Data);
-        }
-      } else if (file.path != null) {
-        // Mobile: Use path
-        if (mounted) {
-          setState(() => _imageUrlController.text = file.path!);
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: $e')),
-        );
-      }
-    }
-  }
-
   Future<void> _submit() async {
     developer.log('Submit: Starting form validation', name: 'create_campaign');
     
@@ -126,13 +90,13 @@ class _CreateCampaignScreenState extends ConsumerState<CreateCampaignScreen> {
 
     try {
       final created = await ref.read(createCampaignProvider.notifier).create(
-            title: _titleController.text.trim(),
-            description: _descriptionController.text.trim(),
-            imageUrl: _imageUrlController.text.trim(),
-            targetAmount: target,
-            startDate: _startDate!,
-            endDate: _endDate!,
-          );
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        category: _mapCategoryToApi(_selectedCategory),
+        targetAmount: target,
+        startDate: _startDate!,
+        endDate: _endDate!,
+      );
 
       if (!mounted) return;
 
@@ -169,8 +133,8 @@ class _CreateCampaignScreenState extends ConsumerState<CreateCampaignScreen> {
             titleController: _titleController,
             descriptionController: _descriptionController,
             targetAmountController: _targetAmountController,
-            imageUrlController: _imageUrlController,
-            onPickImage: _pickImage,
+            selectedCategory: _selectedCategory,
+            onCategoryChanged: (value) => setState(() => _selectedCategory = value),
             startDate: _startDate,
             endDate: _endDate,
             onPickStartDate: _pickStartDate,
@@ -183,5 +147,21 @@ class _CreateCampaignScreenState extends ConsumerState<CreateCampaignScreen> {
         ],
       ),
     );
+  }
+
+  String _mapCategoryToApi(String value) {
+    switch (value) {
+      case 'health':
+        return 'HEALTH';
+      case 'food':
+        return 'FOOD_SUPPORT';
+      case 'emergency':
+        return 'EMERGENCY';
+      case 'environment':
+        return 'ENVIRONMENT';
+      case 'education':
+      default:
+        return 'EDUCATION';
+    }
   }
 }

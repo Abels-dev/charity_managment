@@ -1,5 +1,6 @@
 class CharityProfile {
   const CharityProfile({
+    this.id,
     required this.organizationName,
     this.description,
     this.documentUrl,
@@ -15,6 +16,7 @@ class CharityProfile {
     this.verifiedAt,
   });
 
+  final String? id;
   final String organizationName;
   final String? description;
   final String? documentUrl;
@@ -30,6 +32,7 @@ class CharityProfile {
   final DateTime? verifiedAt;
 
   CharityProfile copyWith({
+    String? id,
     String? organizationName,
     String? description,
     String? documentUrl,
@@ -45,6 +48,7 @@ class CharityProfile {
     DateTime? verifiedAt,
   }) {
     return CharityProfile(
+      id: id ?? this.id,
       organizationName: organizationName ?? this.organizationName,
       description: description ?? this.description,
       documentUrl: documentUrl ?? this.documentUrl,
@@ -63,6 +67,7 @@ class CharityProfile {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'organizationName': organizationName,
       'description': description,
       'documentUrl': documentUrl,
@@ -81,6 +86,7 @@ class CharityProfile {
 
   factory CharityProfile.fromJson(Map<String, dynamic> json) {
     return CharityProfile(
+      id: json['id']?.toString(),
       organizationName: json['organizationName'] as String,
       description: json['description'] as String?,
       documentUrl: json['documentUrl'] as String?,

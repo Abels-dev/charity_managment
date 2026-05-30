@@ -21,7 +21,7 @@ class CreateCampaignController extends StateNotifier<AsyncValue<Campaign?>> {
   Future<Campaign?> create({
     required String title,
     required String description,
-    required String imageUrl,
+    required String category,
     required double targetAmount,
     required DateTime startDate,
     required DateTime endDate,
@@ -47,7 +47,7 @@ class CreateCampaignController extends StateNotifier<AsyncValue<Campaign?>> {
           charityName: user.fullName,
           title: title,
           description: description,
-          imageUrl: imageUrl,
+          category: category,
           targetAmount: targetAmount,
           startDate: startDate,
           endDate: endDate,

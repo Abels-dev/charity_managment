@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'dart:convert' show base64Decode;
 import 'package:flutter/material.dart';
 
 import 'package:charity_managment/core/theme/app_colors.dart';
@@ -8,9 +6,7 @@ import 'package:charity_managment/core/theme/app_theme.dart';
 import 'package:charity_managment/core/widgets/app_button.dart';
 import 'package:charity_managment/core/widgets/app_card.dart';
 import 'package:charity_managment/core/widgets/category_badge.dart';
-import 'package:charity_managment/core/widgets/dashed_card.dart';
 import 'package:charity_managment/core/widgets/form_input.dart';
-import 'package:charity_managment/models/campaign.dart';
 
 class CampaignForm extends StatefulWidget {
   const CampaignForm({
@@ -19,8 +15,7 @@ class CampaignForm extends StatefulWidget {
     required this.titleController,
     required this.descriptionController,
     required this.targetAmountController,
-    required this.imageUrlController,
-    required this.onPickImage,
+    required this.selectedCategory,
     required this.startDate,
     required this.endDate,
     required this.onPickStartDate,
@@ -28,6 +23,7 @@ class CampaignForm extends StatefulWidget {
     required this.onSubmit,
     required this.submitLabel,
     required this.isSubmitting,
+    this.onCategoryChanged,
     this.readOnlyStartDate = false,
     this.isLocked = false,
     this.errorMessage,
@@ -37,8 +33,8 @@ class CampaignForm extends StatefulWidget {
   final TextEditingController titleController;
   final TextEditingController descriptionController;
   final TextEditingController targetAmountController;
-  final TextEditingController imageUrlController;
-  final VoidCallback onPickImage;
+  final String selectedCategory;
+  final ValueChanged<String>? onCategoryChanged;
   final DateTime? startDate;
   final DateTime? endDate;
   final VoidCallback onPickStartDate;
@@ -62,7 +58,13 @@ class CampaignForm extends StatefulWidget {
 }
 
 class _CampaignFormState extends State<CampaignForm> {
-  String _selectedCategory = 'education';
+  static const _categoryOptions = [
+    ('education', 'Education'),
+    ('health', 'Health'),
+    ('food', 'Food Support'),
+    ('emergency', 'Emergency'),
+    ('environment', 'Environment'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -117,71 +119,23 @@ class _CampaignFormState extends State<CampaignForm> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: CampaignCategory.values.map((cat) {
-                  final catName = cat.name.toLowerCase();
-                  final isSelected = _selectedCategory == catName;
+                children: _categoryOptions.map((option) {
+                  final catName = option.$1;
+                  final catLabel = option.$2;
+                  final isSelected = widget.selectedCategory == catName;
                   return Padding(
                     padding: const EdgeInsets.only(right: 8.0),
                     child: GestureDetector(
                       onTap: widget.isLocked
                           ? null
-                          : () {
-                              setState(() => _selectedCategory = catName);
-                            },
+                          : () => widget.onCategoryChanged?.call(catName),
                       child: Opacity(
                         opacity: isSelected ? 1.0 : 0.5,
-                        child: CategoryBadge(category: catName),
+                        child: CategoryBadge(category: catLabel),
                       ),
                     ),
                   );
                 }).toList(),
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacing16),
-            Text(
-              'Campaign Image',
-              style: AppTextStyles.label.copyWith(color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: AppTheme.spacing8),
-            ValueListenableBuilder<TextEditingValue>(
-              valueListenable: widget.imageUrlController,
-              builder: (context, value, child) {
-                final hasImage = value.text.isNotEmpty;
-                return DashedCard(
-                  onTap: widget.isLocked ? null : widget.onPickImage,
-                  padding: hasImage ? EdgeInsets.zero : null,
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 160,
-                    child: hasImage
-                        ? ClipRRect(
-                            borderRadius: AppTheme.borderRadiusLg,
-                            child: _buildImage(value.text),
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.cloud_upload_outlined,
-                                size: 40,
-                                color: AppColors.primary,
-                              ),
-                              const SizedBox(height: AppTheme.spacing8),
-                              Text(
-                                'Tap to upload image',
-                                style: AppTextStyles.body,
-                              ),
-                            ],
-                          ),
-                  ),
-                );
-              },
-            ),
-            // Hidden field to keep validation for URL
-            Offstage(
-              child: TextFormField(
-                controller: widget.imageUrlController,
-                validator: _url,
               ),
             ),
             const SizedBox(height: AppTheme.spacing16),
@@ -225,39 +179,5 @@ class _CampaignFormState extends State<CampaignForm> {
       return 'Enter a valid amount';
     }
     return null;
-  }
-
-  String? _url(String? value) {
-    final text = (value ?? '').trim();
-    if (text.isEmpty) return 'Image is required';
-    // Allow base64 data URLs (from web)
-    if (text.startsWith('data:image')) return null;
-    // Allow file paths (from mobile)
-    if (text.startsWith('/')) return null;
-    // Allow network URLs
-    final uri = Uri.tryParse(text);
-    if (uri == null || (!uri.hasScheme || !uri.hasAuthority)) {
-      return 'Invalid image';
-    }
-    return null;
-  }
-
-  Widget _buildImage(String imageValue) {
-    // Handle base64 data URL (from web file picker)
-    if (imageValue.startsWith('data:image')) {
-      final base64String = imageValue.split(',').last;
-      return Image.memory(
-        base64Decode(base64String),
-        fit: BoxFit.cover,
-      );
-    }
-    // Handle network URL
-    else if (imageValue.startsWith('http')) {
-      return Image.network(imageValue, fit: BoxFit.cover);
-    }
-    // Handle file path (from mobile)
-    else {
-      return Image.file(File(imageValue), fit: BoxFit.cover);
-    }
   }
 }

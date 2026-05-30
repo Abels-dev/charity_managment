@@ -42,6 +42,7 @@ class ApiProfileRepository implements ProfileRepository {
           
           if (charityData != null) {
             charityProfile = CharityProfile(
+              id: charityData['id']?.toString(),
               organizationName: charityData['organizationName'] ?? '',
               description: charityData['description'] ?? '',
               documentUrl: charityData['documentUrl'] ?? '',

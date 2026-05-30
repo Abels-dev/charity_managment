@@ -21,7 +21,6 @@ class EditCampaignController extends StateNotifier<AsyncValue<Campaign?>> {
     required String campaignId,
     required String title,
     required String description,
-    required String imageUrl,
     required double targetAmount,
     required DateTime endDate,
   }) async {
@@ -34,7 +33,6 @@ class EditCampaignController extends StateNotifier<AsyncValue<Campaign?>> {
           campaignId: campaignId,
           title: title,
           description: description,
-          imageUrl: imageUrl,
           targetAmount: targetAmount,
           endDate: endDate,
         ),

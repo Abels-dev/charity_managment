@@ -19,7 +19,7 @@ enum CampaignCategory {
   String get label => switch (this) {
         CampaignCategory.education => 'Education',
         CampaignCategory.health => 'Health',
-        CampaignCategory.food => 'Food',
+      CampaignCategory.food => 'Food Support',
         CampaignCategory.emergency => 'Emergency',
         CampaignCategory.environment => 'Environment',
       };

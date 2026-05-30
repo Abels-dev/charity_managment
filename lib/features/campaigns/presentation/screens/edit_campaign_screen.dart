@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_detail_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/edit_campaign_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_form.dart';
 import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_status_badge.dart';
+import 'package:charity_managment/features/profile/presentation/providers/current_profile_provider.dart';
 import 'package:charity_managment/models/campaign.dart';
 import 'package:charity_managment/routing/app_routes.dart';
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
@@ -30,7 +30,6 @@ class _EditCampaignScreenState extends ConsumerState<EditCampaignScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _targetAmountController = TextEditingController();
-  final _imageUrlController = TextEditingController();
 
   DateTime? _endDate;
   DateTime? _startDate;
@@ -41,7 +40,6 @@ class _EditCampaignScreenState extends ConsumerState<EditCampaignScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _targetAmountController.dispose();
-    _imageUrlController.dispose();
     super.dispose();
   }
 
@@ -52,7 +50,6 @@ class _EditCampaignScreenState extends ConsumerState<EditCampaignScreen> {
     _titleController.text = campaign.title;
     _descriptionController.text = campaign.description;
     _targetAmountController.text = campaign.targetAmount.toStringAsFixed(0);
-    _imageUrlController.text = campaign.imageUrl;
     _startDate = campaign.startDate;
     _endDate = campaign.endDate;
   }
@@ -70,8 +67,6 @@ class _EditCampaignScreenState extends ConsumerState<EditCampaignScreen> {
       setState(() => _endDate = selected);
     }
   }
-
-  Future<void> _pickImage() async {}
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -92,7 +87,6 @@ class _EditCampaignScreenState extends ConsumerState<EditCampaignScreen> {
           campaignId: widget.campaignId,
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
-          imageUrl: _imageUrlController.text.trim(),
           targetAmount: double.parse(_targetAmountController.text.trim()),
           endDate: _endDate!,
         );
@@ -111,7 +105,7 @@ class _EditCampaignScreenState extends ConsumerState<EditCampaignScreen> {
   @override
   Widget build(BuildContext context) {
     final campaignAsync = ref.watch(campaignDetailProvider(widget.campaignId));
-    final user = ref.watch(authControllerProvider).user;
+    final profileAsync = ref.watch(currentProfileProvider);
     final editState = ref.watch(editCampaignProvider);
 
     return AppScaffold(
@@ -131,51 +125,61 @@ class _EditCampaignScreenState extends ConsumerState<EditCampaignScreen> {
             );
           }
 
-          if (user == null || user.id != campaign.charityId) {
-            return const EmptyState(
-              title: 'Access denied',
-              subtitle: 'You can only edit campaigns owned by your charity.',
-            );
-          }
+          return profileAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => EmptyState(
+              title: 'Unable to load profile',
+              subtitle: error.toString(),
+            ),
+            data: (profile) {
+              final ownerId = profile.charityProfile?.id ?? profile.user.id;
 
-          _prefill(campaign);
+              if (ownerId != campaign.charityId) {
+                return const EmptyState(
+                  title: 'Access denied',
+                  subtitle: 'You can only edit campaigns owned by your charity.',
+                );
+              }
 
-          final locked = campaign.status == CampaignStatus.closed;
+              _prefill(campaign);
 
-          return ListView(
-            children: [
-              Row(
+              final locked = campaign.status == CampaignStatus.closed;
+
+              return ListView(
                 children: [
-                  const Text('Status: '),
-                  CampaignStatusBadge(status: campaign.status),
+                  Row(
+                    children: [
+                      const Text('Status: '),
+                      CampaignStatusBadge(status: campaign.status),
+                    ],
+                  ),
+                  if (locked) ...[
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Closed campaigns cannot be edited.',
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  CampaignForm(
+                    formKey: _formKey,
+                    titleController: _titleController,
+                    descriptionController: _descriptionController,
+                    targetAmountController: _targetAmountController,
+                    selectedCategory: campaign.category.name.toLowerCase(),
+                    startDate: _startDate,
+                    endDate: _endDate,
+                    onPickStartDate: () {},
+                    onPickEndDate: _pickEndDate,
+                    onSubmit: _submit,
+                    submitLabel: 'Save Changes',
+                    isSubmitting: editState.isLoading,
+                    errorMessage: editState.error?.toString(),
+                    readOnlyStartDate: true,
+                    isLocked: locked,
+                  ),
                 ],
-              ),
-              if (locked) ...[
-                const SizedBox(height: 12),
-                const Text(
-                  'Closed campaigns cannot be edited.',
-                ),
-              ],
-              const SizedBox(height: 12),
-              CampaignForm(
-                formKey: _formKey,
-                titleController: _titleController,
-                descriptionController: _descriptionController,
-                targetAmountController: _targetAmountController,
-                imageUrlController: _imageUrlController,
-                onPickImage: _pickImage,
-                startDate: _startDate,
-                endDate: _endDate,
-                onPickStartDate: () {},
-                onPickEndDate: _pickEndDate,
-                onSubmit: _submit,
-                submitLabel: 'Save Changes',
-                isSubmitting: editState.isLoading,
-                errorMessage: editState.error?.toString(),
-                readOnlyStartDate: true,
-                isLocked: locked,
-              ),
-            ],
+              );
+            },
           );
         },
       ),

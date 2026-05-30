@@ -21,6 +21,37 @@ import 'package:charity_managment/core/theme/app_theme.dart';
 import 'package:charity_managment/core/theme/app_text_styles.dart';
 import 'package:charity_managment/core/theme/app_colors.dart';
 
+class _CampaignHeroAvatar extends StatelessWidget {
+  const _CampaignHeroAvatar({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = title.trim().isEmpty ? '?' : title.trim()[0].toUpperCase();
+
+    return Container(
+      width: double.infinity,
+      height: 250,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: AppTextStyles.display.copyWith(
+          fontSize: 96,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+}
+
 class CampaignDetailScreen extends ConsumerWidget {
   const CampaignDetailScreen({
     super.key,
@@ -69,22 +100,7 @@ class CampaignDetailScreen extends ConsumerWidget {
                         bottomLeft: Radius.circular(AppTheme.radiusXl),
                         bottomRight: Radius.circular(AppTheme.radiusXl),
                       ),
-                      child: Image.network(
-                        campaign.imageUrl,
-                        width: double.infinity,
-                        height: 250,
-                        fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                          width: double.infinity,
-                          height: 250,
-                          color: AppColors.border,
-                          child: const Icon(
-                            Icons.image_not_supported,
-                            size: 48,
-                            color: AppColors.textBody,
-                          ),
-                        ),
-                      ),
+                      child: _CampaignHeroAvatar(title: campaign.title),
                     ),
                     
                     // 2. Title, CategoryBadge, Charity Name

@@ -9,7 +9,7 @@ import 'package:charity_managment/core/theme/app_text_styles.dart';
 import 'package:charity_managment/core/theme/app_theme.dart';
 import 'package:charity_managment/routing/app_routes.dart';
 
-const _charityWebsiteUrl = 'https://61f7-196-188-33-79.ngrok-free.app';
+const _charityWebsiteUrl = 'https://charity-management-system-nu.vercel.app';
 
 class CharityInfoScreen extends StatelessWidget {
   const CharityInfoScreen({super.key});
