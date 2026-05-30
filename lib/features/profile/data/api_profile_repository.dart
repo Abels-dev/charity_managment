@@ -48,6 +48,12 @@ class ApiProfileRepository implements ProfileRepository {
               phone: charityData['phone'],
               address: charityData['address'],
               website: charityData['website'],
+              socialFacebook: charityData['socialFacebook'],
+              socialTelegram: charityData['socialTelegram'],
+              socialInstagram: charityData['socialInstagram'],
+              socialTwitter: charityData['socialTwitter'],
+              socialYoutube: charityData['socialYoutube'],
+              socialTiktok: charityData['socialTiktok'],
               verifiedAt: charityData['verifiedAt'] != null
                   ? DateTime.tryParse(charityData['verifiedAt'].toString())
                   : null,
@@ -97,6 +103,12 @@ class ApiProfileRepository implements ProfileRepository {
         'phone': input.phone,
         'website': input.website,
         'address': input.address,
+        'socialFacebook': input.socialFacebook,
+        'socialTelegram': input.socialTelegram,
+        'socialInstagram': input.socialInstagram,
+        'socialTwitter': input.socialTwitter,
+        'socialYoutube': input.socialYoutube,
+        'socialTiktok': input.socialTiktok,
       });
 
       return await getCurrentUserProfile();

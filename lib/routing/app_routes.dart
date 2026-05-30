@@ -27,6 +27,7 @@ class AppRoutes {
   static const profile = '/profile';
   static const editProfile = '/profile/edit';
   static const charityDashboard = '/charity-dashboard';
+  static const donorDashboard = '/donor-dashboard';
 
   static String charityProfile(String charityId) => '/charities/$charityId';
 

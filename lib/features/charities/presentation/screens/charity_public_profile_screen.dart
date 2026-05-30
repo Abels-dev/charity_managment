@@ -1,20 +1,24 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:charity_managment/features/charities/presentation/providers/charity_public_profile_provider.dart';
 import 'package:charity_managment/features/charities/domain/charity_public_profile.dart';
 import 'package:charity_managment/features/campaigns/presentation/providers/campaign_follow_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_card.dart';
+import 'package:charity_managment/features/bank_accounts/data/api_bank_account_repository.dart';
 import 'package:charity_managment/models/charity_stats.dart';
 import 'package:charity_managment/routing/app_routes.dart';
-import 'package:charity_managment/features/bank_accounts/presentation/providers/bank_account_repository_provider.dart';
-import 'package:charity_managment/features/bank_accounts/data/api_bank_account_repository.dart';
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
 import 'package:charity_managment/shared/widgets/empty_state.dart';
-import 'package:charity_managment/models/user_role.dart';
+import 'package:charity_managment/core/widgets/app_card.dart';
+import 'package:charity_managment/core/theme/app_colors.dart';
+import 'package:charity_managment/core/theme/app_text_styles.dart';
+import 'package:charity_managment/core/theme/app_theme.dart';
 
 class CharityPublicProfileScreen extends ConsumerWidget {
   const CharityPublicProfileScreen({
@@ -28,7 +32,6 @@ class CharityPublicProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authControllerProvider);
     final profileAsync = ref.watch(charityPublicProfileProvider(charityId));
-    final myProfileAsync = ref.watch(myCharityProfileProvider);
     final followController = ref.read(campaignFollowProvider.notifier);
     final followedIds = ref.watch(campaignFollowProvider).valueOrNull ?? <String>{};
 
@@ -53,25 +56,30 @@ class CharityPublicProfileScreen extends ConsumerWidget {
           final profile = details.profile;
           final stats = details.stats;
           final campaigns = details.campaigns;
-          final myProfile = myProfileAsync.valueOrNull;
-          final isOwnCharityProfile =
-              auth.isAuthenticated &&
-              auth.user?.role == UserRole.charityOrganization &&
-              myProfile != null &&
-              myProfile.id == profile.id;
 
           return ListView(
+            padding: const EdgeInsets.all(16),
             children: [
               _HeaderCard(profile: profile),
-              const SizedBox(height: 16),
-              _StatsRow(stats: stats),
               const SizedBox(height: 20),
-              if (isOwnCharityProfile) ...[
-                _BankAccountsSection(),
-                const SizedBox(height: 16),
+              _StatsRow(stats: stats),
+              const SizedBox(height: 24),
+              _CharityInfoCard(profile: profile),
+              const SizedBox(height: 20),
+              _CharitySocialLinksCard(profile: profile),
+              if (profile.bankAccounts.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                _BankAccountsSection(accounts: profile.bankAccounts),
               ],
-              Text('Active campaigns', style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 8),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Active Campaigns',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              const SizedBox(height: 12),
               if (campaigns.isEmpty)
                 const EmptyState(
                   title: 'No campaigns yet',
@@ -131,321 +139,6 @@ class CharityPublicProfileScreen extends ConsumerWidget {
   }
 }
 
-class _BankAccountsSection extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final accountsAsync = ref.watch(bankAccountsProvider);
-    final mutationState = ref.watch(bankAccountMutationProvider);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Bank accounts',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-            FilledButton.icon(
-              onPressed: mutationState.isLoading
-                  ? null
-                  : () => _showBankAccountFormDialog(context, ref),
-              icon: const Icon(Icons.add),
-              label: const Text('Add'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        accountsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text('Unable to load bank accounts: $error'),
-          ),
-          data: (accounts) {
-            if (accounts.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('No bank accounts yet. Add one to receive campaign funds.'),
-              );
-            }
-
-            return Column(
-              children: [
-                for (final account in accounts) ...[
-                  _InlineBankAccountCard(account: account),
-                  const SizedBox(height: 10),
-                ],
-              ],
-            );
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class _InlineBankAccountCard extends ConsumerWidget {
-  const _InlineBankAccountCard({required this.account});
-
-  final BankAccount account;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mutationState = ref.watch(bankAccountMutationProvider);
-    final isBusy = mutationState.isLoading;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    account.bankName,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                if (account.isPrimary)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      'Primary',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimaryContainer,
-                          ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text('Holder: ${account.accountHolder}'),
-            const SizedBox(height: 4),
-            Text('Number: ${_masked(account.accountNumber)}'),
-            const SizedBox(height: 4),
-            Text('Type: ${account.type.toUpperCase()}'),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                OutlinedButton(
-                  onPressed: isBusy
-                      ? null
-                      : () => _showBankAccountFormDialog(
-                            context,
-                            ref,
-                            initial: account,
-                          ),
-                  child: const Text('Edit'),
-                ),
-                OutlinedButton(
-                  onPressed: isBusy || account.isPrimary
-                      ? null
-                      : () async {
-                          await ref.read(bankAccountMutationProvider.notifier).setPrimary(account.id);
-                          final state = ref.read(bankAccountMutationProvider);
-                          if (!context.mounted) return;
-                          if (state.hasError) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(state.error.toString())),
-                            );
-                          }
-                        },
-                  child: const Text('Set primary'),
-                ),
-                TextButton(
-                  onPressed: isBusy
-                      ? null
-                      : () async {
-                          final confirmed = await showDialog<bool>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Delete bank account'),
-                              content: const Text(
-                                'Are you sure you want to delete this bank account?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(false),
-                                  child: const Text('Cancel'),
-                                ),
-                                FilledButton(
-                                  onPressed: () => Navigator.of(context).pop(true),
-                                  child: const Text('Delete'),
-                                ),
-                              ],
-                            ),
-                          );
-
-                          if (confirmed != true) return;
-                          await ref.read(bankAccountMutationProvider.notifier).remove(account.id);
-                          final state = ref.read(bankAccountMutationProvider);
-                          if (!context.mounted) return;
-                          if (state.hasError) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(state.error.toString())),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Bank account deleted.')),
-                            );
-                          }
-                        },
-                  child: const Text('Delete'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  static String _masked(String raw) {
-    if (raw.length <= 4) return raw;
-    final last4 = raw.substring(raw.length - 4);
-    return '•••• •••• $last4';
-  }
-}
-
-Future<void> _showBankAccountFormDialog(
-  BuildContext context,
-  WidgetRef ref, {
-  BankAccount? initial,
-}) async {
-  final formKey = GlobalKey<FormState>();
-  final bankNameController = TextEditingController(text: initial?.bankName ?? '');
-  final holderController = TextEditingController(text: initial?.accountHolder ?? '');
-  final numberController = TextEditingController(text: initial?.accountNumber ?? '');
-  var accountType = initial?.type.toUpperCase() == 'BUSINESS' ? 'BUSINESS' : 'PERSONAL';
-  var isPrimary = initial?.isPrimary ?? false;
-
-  final result = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: Text(initial == null ? 'Add bank account' : 'Edit bank account'),
-            content: SingleChildScrollView(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: bankNameController,
-                      decoration: const InputDecoration(labelText: 'Bank name'),
-                      validator: (value) =>
-                          (value == null || value.trim().isEmpty) ? 'Bank name is required' : null,
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: holderController,
-                      decoration: const InputDecoration(labelText: 'Account holder'),
-                      validator: (value) =>
-                          (value == null || value.trim().isEmpty) ? 'Account holder is required' : null,
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: numberController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Account number'),
-                      validator: (value) =>
-                          (value == null || value.trim().isEmpty) ? 'Account number is required' : null,
-                    ),
-                    const SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
-                      initialValue: accountType,
-                      items: const [
-                        DropdownMenuItem(value: 'PERSONAL', child: Text('Personal')),
-                        DropdownMenuItem(value: 'BUSINESS', child: Text('Business')),
-                      ],
-                      decoration: const InputDecoration(labelText: 'Account type'),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() => accountType = value);
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      value: isPrimary,
-                      onChanged: (value) => setState(() => isPrimary = value),
-                      title: const Text('Set as primary'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () {
-                  if (!(formKey.currentState?.validate() ?? false)) return;
-                  Navigator.of(dialogContext).pop(true);
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-
-  if (result != true) return;
-
-  final notifier = ref.read(bankAccountMutationProvider.notifier);
-  if (initial == null) {
-    await notifier.create(
-      bankName: bankNameController.text.trim(),
-      accountHolder: holderController.text.trim(),
-      accountNumber: numberController.text.trim(),
-      type: accountType,
-      isPrimary: isPrimary,
-    );
-  } else {
-    await notifier.update(
-      accountId: initial.id,
-      bankName: bankNameController.text.trim(),
-      accountHolder: holderController.text.trim(),
-      accountNumber: numberController.text.trim(),
-      type: accountType,
-      isPrimary: isPrimary,
-    );
-  }
-
-  final state = ref.read(bankAccountMutationProvider);
-  if (context.mounted) {
-    if (state.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.error.toString())),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(initial == null ? 'Bank account added.' : 'Bank account updated.'),
-        ),
-      );
-    }
-  }
-}
-
 class _HeaderCard extends StatelessWidget {
   const _HeaderCard({required this.profile});
 
@@ -453,66 +146,454 @@ class _HeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final isVerified = profile.isVerified;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: colorScheme.primaryContainer,
-                  child: Icon(Icons.favorite, color: colorScheme.primary),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+    return AppCard(
+      padding: const EdgeInsets.all(AppTheme.spacing16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _LogoAvatar(logo: profile.logo, name: profile.organizationName),
+              const SizedBox(width: AppTheme.spacing12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(profile.organizationName, style: AppTextStyles.title),
+                    const SizedBox(height: AppTheme.spacing4),
+                    _StatusBadge(profile: profile),
+                    if (profile.verifiedAt != null) ...[
+                      const SizedBox(height: AppTheme.spacing8),
                       Text(
-                        profile.organizationName,
-                        style: Theme.of(context).textTheme.titleLarge,
+                        'Verified on ${_formatDate(profile.verifiedAt!)}',
+                        style: AppTextStyles.micro.copyWith(color: AppColors.textBody),
                       ),
-                      if (profile.isVerified)
-                        Text(
-                          'Verified charity',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium
-                              ?.copyWith(color: colorScheme.primary),
-                        )
-                      else
-                        Text(
-                          'Verification pending',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium
-                              ?.copyWith(color: colorScheme.tertiary),
-                        ),
                     ],
-                  ),
+                  ],
                 ),
+              ),
+            ],
+          ),
+          if (profile.description != null && profile.description!.trim().isNotEmpty) ...[
+            const SizedBox(height: AppTheme.spacing12),
+            Text(profile.description!, style: AppTextStyles.body),
+          ],
+          const SizedBox(height: AppTheme.spacing16),
+          _DetailRow(label: 'Phone', value: profile.phone),
+          _DetailRow(label: 'Website', value: profile.website),
+          _DetailRow(label: 'Address', value: profile.address),
+          if (!isVerified) ...[
+            const SizedBox(height: AppTheme.spacing8),
+            Text(
+              'Verification pending',
+              style: AppTextStyles.micro.copyWith(
+                color: const Color(0xFFF59E0B),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CharityInfoCard extends StatelessWidget {
+  const _CharityInfoCard({required this.profile});
+
+  final CharityPublicProfile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.all(AppTheme.spacing16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Charity information', style: AppTextStyles.title),
+          const SizedBox(height: AppTheme.spacing16),
+          _DetailRow(label: 'Phone', value: profile.phone),
+          _DetailRow(label: 'Website', value: profile.website),
+          _DetailRow(label: 'Address', value: profile.address),
+        ],
+      ),
+    );
+  }
+}
+
+class _CharitySocialLinksCard extends StatelessWidget {
+  const _CharitySocialLinksCard({required this.profile});
+
+  final CharityPublicProfile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final links = <_SocialLinkData>[
+      _SocialLinkData(
+        label: 'Facebook',
+        value: profile.socialFacebook ?? '',
+        icon: Icons.facebook,
+        color: const Color(0xFF1877F2),
+      ),
+      _SocialLinkData(
+        label: 'Telegram',
+        value: profile.socialTelegram ?? '',
+        icon: Icons.send_outlined,
+        color: const Color(0xFF229ED9),
+      ),
+      _SocialLinkData(
+        label: 'Instagram',
+        value: profile.socialInstagram ?? '',
+        icon: Icons.camera_alt_outlined,
+        color: const Color(0xFFE4405F),
+      ),
+      _SocialLinkData(
+        label: 'Twitter',
+        value: profile.socialTwitter ?? '',
+        icon: Icons.alternate_email,
+        color: const Color(0xFF111827),
+      ),
+      _SocialLinkData(
+        label: 'YouTube',
+        value: profile.socialYoutube ?? '',
+        icon: Icons.play_circle_outline,
+        color: const Color(0xFFFF0000),
+      ),
+      _SocialLinkData(
+        label: 'TikTok',
+        value: profile.socialTiktok ?? '',
+        icon: Icons.music_note_outlined,
+        color: Colors.black,
+      ),
+    ];
+
+    final activeLinks = links.where((link) => link.value.trim().isNotEmpty).toList(growable: false);
+
+    return AppCard(
+      padding: const EdgeInsets.all(AppTheme.spacing16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Social links', style: AppTextStyles.title),
+          const SizedBox(height: AppTheme.spacing16),
+          if (activeLinks.isEmpty)
+            Text(
+              'No social links added yet.',
+              style: AppTextStyles.body.copyWith(color: AppColors.textBody),
+            )
+          else
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [for (final link in activeLinks) _SocialChip(link: link)],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BankAccountsSection extends StatelessWidget {
+  const _BankAccountsSection({required this.accounts});
+
+  final List<BankAccount> accounts;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.all(AppTheme.spacing16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Bank accounts', style: AppTextStyles.title),
+          const SizedBox(height: AppTheme.spacing16),
+          if (accounts.isEmpty)
+            Text(
+              'No bank accounts added yet.',
+              style: AppTextStyles.body.copyWith(color: AppColors.textBody),
+            )
+          else
+            Column(
+              children: [
+                for (final account in accounts) ...[
+                  _PublicBankAccountCard(account: account),
+                  const SizedBox(height: AppTheme.spacing12),
+                ],
               ],
             ),
-            const SizedBox(height: 12),
-            if (profile.description != null)
-              Text(
-                profile.description!,
-                style: Theme.of(context).textTheme.bodyMedium,
+        ],
+      ),
+    );
+  }
+}
+
+class _PublicBankAccountCard extends StatelessWidget {
+  const _PublicBankAccountCard({required this.account});
+
+  final BankAccount account;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final masked = _masked(account.accountNumber);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(account.bankName, style: AppTextStyles.label),
               ),
-            if (profile.description != null) const SizedBox(height: 12),
-            _InfoRow(label: 'Phone', value: profile.phone ?? 'Not provided'),
-            _InfoRow(label: 'Website', value: profile.website ?? 'Not provided'),
-            _InfoRow(label: 'Address', value: profile.address ?? 'Not provided'),
-          ],
+              if (account.isPrimary)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    'Primary',
+                    style: AppTextStyles.micro.copyWith(color: AppColors.primary),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            account.accountHolder,
+            style: AppTextStyles.body.copyWith(color: AppColors.textBody),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            masked,
+            style: AppTextStyles.body,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  account.type.toUpperCase(),
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: AppColors.textBody,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: account.accountNumber));
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Copied ${account.bankName} account number.')),
+                  );
+                },
+                icon: const Icon(Icons.copy_outlined, size: 18),
+                label: const Text('Copy'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
+
+  final String label;
+  final String? value;
+
+  @override
+  Widget build(BuildContext context) {
+    final display = (value == null || value!.trim().isEmpty) ? 'Not provided' : value!;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(
+              label,
+              style: AppTextStyles.micro.copyWith(color: AppColors.textBody),
+            ),
+          ),
+          Expanded(
+            child: Text(display, style: AppTextStyles.body),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({required this.profile});
+
+  final CharityPublicProfile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final isApproved = profile.status?.toUpperCase() == 'APPROVED' || profile.isVerified;
+    final color = isApproved ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
+    final label = isApproved ? 'Verified' : (profile.status ?? 'Pending verification');
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: AppTheme.borderRadiusPill,
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.micro.copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
+}
+
+class _LogoAvatar extends StatelessWidget {
+  const _LogoAvatar({required this.logo, required this.name});
+
+  final String? logo;
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = name.trim().isNotEmpty ? name.trim()[0].toUpperCase() : '?';
+    final hasNetworkLogo = logo != null && logo!.trim().startsWith('http');
+
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: AppTheme.borderRadiusMd,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: hasNetworkLogo
+          ? Image.network(
+              logo!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Center(
+                child: Text(
+                  initial,
+                  style: AppTextStyles.title.copyWith(color: AppColors.primary),
+                ),
+              ),
+            )
+          : Center(
+              child: Text(
+                initial,
+                style: AppTextStyles.title.copyWith(color: AppColors.primary),
+              ),
+            ),
+    );
+  }
+}
+
+class _SocialChip extends StatelessWidget {
+  const _SocialChip({required this.link});
+
+  final _SocialLinkData link;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: AppTheme.borderRadiusPill,
+        onTap: () async {
+          final url = _normalizeUrl(link.value);
+          final uri = Uri.tryParse(url);
+          if (uri == null) return;
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: link.color.withValues(alpha: 0.06),
+            borderRadius: AppTheme.borderRadiusPill,
+            border: Border.all(color: link.color.withValues(alpha: 0.16)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(link.icon, size: 18, color: link.color),
+              const SizedBox(width: 8),
+              Text(
+                link.label,
+                style: AppTextStyles.micro.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Icon(
+                Icons.open_in_new,
+                size: 14,
+                color: AppColors.textBody.withValues(alpha: 0.8),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SocialLinkData {
+  const _SocialLinkData({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+  final IconData icon;
+}
+
+String _masked(String raw) {
+  if (raw.length <= 4) return raw;
+  final last4 = raw.substring(raw.length - 4);
+  return '•••• •••• $last4';
+}
+
+String _formatDate(DateTime value) {
+  final y = value.year.toString().padLeft(4, '0');
+  final m = value.month.toString().padLeft(2, '0');
+  final d = value.day.toString().padLeft(2, '0');
+  return '$y-$m-$d';
+}
+
+String _normalizeUrl(String raw) {
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) return trimmed;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  return 'https://$trimmed';
 }
 
 class _StatsRow extends StatelessWidget {
@@ -522,31 +603,37 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+    return GridView.count(
+      crossAxisCount: MediaQuery.of(context).size.width >= 600 ? 4 : 2,
+      crossAxisSpacing: AppTheme.spacing12,
+      mainAxisSpacing: AppTheme.spacing12,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      childAspectRatio: 1.45,
       children: [
         _StatTile(
           label: 'Campaigns',
           value: stats.totalCampaigns.toString(),
-          textTheme: textTheme,
+          icon: Icons.campaign_outlined,
+          tint: const Color(0xFF3B82F6),
         ),
         _StatTile(
           label: 'Active',
           value: stats.activeCampaigns.toString(),
-          textTheme: textTheme,
+          icon: Icons.play_circle_outline,
+          tint: const Color(0xFF10B981),
         ),
         _StatTile(
           label: 'Raised',
           value: stats.totalRaised.toStringAsFixed(0),
-          textTheme: textTheme,
+          icon: Icons.savings_outlined,
+          tint: const Color(0xFFF59E0B),
         ),
         _StatTile(
           label: 'Donors',
           value: stats.totalDonors.toString(),
-          textTheme: textTheme,
+          icon: Icons.groups_outlined,
+          tint: const Color(0xFF8B5CF6),
         ),
       ],
     );
@@ -557,53 +644,49 @@ class _StatTile extends StatelessWidget {
   const _StatTile({
     required this.label,
     required this.value,
-    required this.textTheme,
+    required this.icon,
+    required this.tint,
   });
 
   final String label;
   final String value;
-  final TextTheme textTheme;
+  final IconData icon;
+  final Color tint;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-      ),
+    return AppCard(
+      padding: const EdgeInsets.all(AppTheme.spacing12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(value, style: textTheme.titleMedium),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: tint.withValues(alpha: 0.12),
+              borderRadius: AppTheme.borderRadiusMd,
+            ),
+            child: Icon(icon, color: tint, size: 22),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: AppTextStyles.title.copyWith(
+              color: tint,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 4),
-          Text(label, style: textTheme.bodySmall),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              '$label:',
-              style: Theme.of(context).textTheme.bodyMedium,
+          Text(
+            label,
+            style: AppTextStyles.micro.copyWith(
+              color: AppColors.textBody,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          Expanded(child: Text(value)),
         ],
       ),
     );

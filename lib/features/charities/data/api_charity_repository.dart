@@ -9,15 +9,7 @@ class ApiCharityRepository implements CharityRepository {
   final Dio _dio;
 
   CharityPublicProfile _mapProfile(Map<String, dynamic> json) {
-    return CharityPublicProfile(
-      id: json['id']?.toString() ?? '',
-      organizationName: json['organizationName']?.toString() ?? 'Unknown',
-      description: json['description']?.toString(),
-      phone: json['phone']?.toString(),
-      address: json['address']?.toString(),
-      website: json['website']?.toString(),
-      isVerified: json['verifiedAt'] != null,
-    );
+    return CharityPublicProfile.fromJson(json);
   }
 
   @override

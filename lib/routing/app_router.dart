@@ -17,6 +17,7 @@ import 'package:charity_managment/features/campaigns/presentation/screens/edit_c
 import 'package:charity_managment/features/campaigns/presentation/screens/followed_campaigns_screen.dart';
 import 'package:charity_managment/features/campaigns/presentation/screens/my_campaigns_screen.dart';
 import 'package:charity_managment/features/charity_dashboard/presentation/screens/charity_dashboard_screen.dart';
+import 'package:charity_managment/features/donor_dashboard/presentation/screens/donor_dashboard_screen.dart';
 import 'package:charity_managment/features/bank_accounts/presentation/screens/bank_accounts_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/anonymous_donations_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donations_screen.dart';
@@ -24,8 +25,7 @@ import 'package:charity_managment/features/donations/presentation/screens/donati
 import 'package:charity_managment/features/donations/presentation/screens/donation_success_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donation_receipt_screen.dart';
 import 'package:charity_managment/features/notifications/presentation/screens/notifications_screen.dart';
-import 'package:charity_managment/features/profile/presentation/screens/edit_profile_screen.dart';
-import 'package:charity_managment/features/profile/presentation/screens/profile_screen.dart';
+import 'package:charity_managment/features/profile/presentation/screens/profile_home_screen.dart';
 import 'package:charity_managment/features/public_home/presentation/screens/public_home_screen.dart';
 import 'package:charity_managment/features/charities/presentation/screens/charity_public_profile_screen.dart';
 import 'package:charity_managment/features/charity_dashboard/presentation/screens/charity_contributions_screen.dart';
@@ -211,11 +211,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.editProfile,
-        builder: (context, state) => const EditProfileScreen(),
+        builder: (context, state) => const ProfileScreen(initiallyEditing: true),
       ),
       GoRoute(
         path: AppRoutes.charityDashboard,
         builder: (context, state) => const CharityDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.donorDashboard,
+        builder: (context, state) => const DonorDashboardScreen(),
       ),
       GoRoute(
         path: AppRoutes.charityContributions,

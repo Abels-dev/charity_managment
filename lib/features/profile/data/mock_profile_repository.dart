@@ -63,6 +63,12 @@ class MockProfileRepository implements ProfileRepository {
       phone: input.phone,
       website: input.website,
       address: input.address,
+      socialFacebook: input.socialFacebook,
+      socialTelegram: input.socialTelegram,
+      socialInstagram: input.socialInstagram,
+      socialTwitter: input.socialTwitter,
+      socialYoutube: input.socialYoutube,
+      socialTiktok: input.socialTiktok,
     );
 
     final updatedUser = current.user.copyWith(

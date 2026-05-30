@@ -10,10 +10,17 @@ import 'package:charity_managment/features/profile/domain/models/user_profile_up
 import 'package:charity_managment/features/profile/presentation/providers/current_profile_provider.dart';
 import 'package:charity_managment/features/profile/presentation/providers/profile_update_provider.dart';
 import 'package:charity_managment/features/profile/presentation/utils/profile_validators.dart';
-import 'package:charity_managment/features/profile/presentation/widgets/profile_section_card.dart';
-import 'package:charity_managment/features/profile/presentation/widgets/profile_text_field.dart';
+
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
 import 'package:charity_managment/shared/widgets/async_value_view.dart';
+
+import 'package:charity_managment/core/widgets/form_input.dart';
+import 'package:charity_managment/core/widgets/app_button.dart';
+import 'package:charity_managment/core/widgets/app_card.dart';
+import 'package:charity_managment/core/widgets/dashed_card.dart';
+import 'package:charity_managment/core/theme/app_theme.dart';
+import 'package:charity_managment/core/theme/app_text_styles.dart';
+import 'package:charity_managment/core/theme/app_colors.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -64,112 +71,148 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             _initialized = true;
           }
 
-          final isCharity = profile.user.role == ProfileRole.charity;
+          final user = profile.user;
+          final isCharity = user.role == ProfileRole.charity;
           final isCreatingCharityProfile = isCharity && profile.charityProfile == null;
 
           return SingleChildScrollView(
             child: Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  ProfileSectionCard(
-                    title: 'Profile details',
+                  const SizedBox(height: AppTheme.spacing16),
+                  // Avatar
+                  CircleAvatar(
+                    radius: 48,
+                    backgroundColor: AppColors.primaryBg,
+                    child: Text(
+                      user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                      style: AppTextStyles.display.copyWith(
+                        color: AppColors.primary,
+                        fontSize: 32,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacing16),
+                  // Name
+                  Text(
+                    user.name,
+                    style: AppTextStyles.title,
+                  ),
+                  const SizedBox(height: AppTheme.spacing8),
+                  // Role Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: AppTheme.borderRadiusPill,
+                    ),
+                    child: Text(
+                      user.role.label,
+                      style: AppTextStyles.label.copyWith(color: AppColors.primary),
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacing32),
+
+                  // Edit Profile Form
+                  AppCard(
+                    padding: const EdgeInsets.all(AppTheme.spacing24),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ProfileTextField(
+                        Text('Profile Details', style: AppTextStyles.title),
+                        const SizedBox(height: AppTheme.spacing24),
+                        FormInput(
                           label: isCharity ? 'Organization name' : 'Full name',
                           controller: _nameController,
+                          hint: isCharity ? 'Enter organization name' : 'Enter full name',
                           validator: (value) => ProfileValidators.requiredText(
                             value,
                             isCharity ? 'Organization name' : 'Full name',
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        ProfileTextField(
+                        const SizedBox(height: AppTheme.spacing16),
+                        FormInput(
                           label: 'Phone',
                           controller: _phoneController,
+                          hint: 'Enter phone number',
                           keyboardType: TextInputType.phone,
                           validator: ProfileValidators.phone,
                         ),
                         if (!isCharity) ...[
-                          const SizedBox(height: 12),
-                          ProfileTextField(
+                          const SizedBox(height: AppTheme.spacing16),
+                          FormInput(
                             label: 'Bio',
                             controller: _bioController,
+                            hint: 'Tell us a bit about yourself...',
                             maxLines: 3,
                           ),
                         ],
                         if (isCharity) ...[
-                          const SizedBox(height: 12),
-                          ProfileTextField(
+                          const SizedBox(height: AppTheme.spacing16),
+                          FormInput(
                             label: 'Description',
                             controller: _descriptionController,
+                            hint: 'Describe your organization...',
                             maxLines: 3,
                           ),
                           if (isCreatingCharityProfile) ...[
-                            const SizedBox(height: 12),
+                            const SizedBox(height: AppTheme.spacing24),
+                            Text('Required Document', style: AppTextStyles.label),
+                            const SizedBox(height: AppTheme.spacing8),
                             _FilePickerButton(
-                              label: 'Document (required)',
                               value: _documentPathController.text,
                               onPressed: _pickDocument,
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: AppTheme.spacing24),
+                            Text('Organization Logo', style: AppTextStyles.label),
+                            const SizedBox(height: AppTheme.spacing8),
                             _FilePickerButton(
-                              label: 'Logo (optional)',
                               value: _logoPathController.text,
                               onPressed: _pickLogo,
                             ),
                           ],
-                          const SizedBox(height: 12),
-                          ProfileTextField(
+                          const SizedBox(height: AppTheme.spacing16),
+                          FormInput(
                             label: 'Website',
                             controller: _websiteController,
+                            hint: 'https://example.org',
                             keyboardType: TextInputType.url,
                             validator: ProfileValidators.website,
                           ),
-                          const SizedBox(height: 12),
-                          ProfileTextField(
+                          const SizedBox(height: AppTheme.spacing16),
+                          FormInput(
                             label: 'Address',
                             controller: _addressController,
+                            hint: '123 Charity Ave...',
                             maxLines: 2,
                           ),
                         ],
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppTheme.spacing24),
                   if (updateState.hasError)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(bottom: AppTheme.spacing16),
                       child: Text(
                         updateState.error.toString(),
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                        style: AppTextStyles.body.copyWith(color: AppColors.error),
                       ),
                     ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: updateState.isLoading
-                          ? null
-                          : () async {
-                              if (!_formKey.currentState!.validate()) return;
-                              await _submit(
-                                profile.user.role,
-                                createProfile: isCreatingCharityProfile,
-                              );
-                            },
-                      child: updateState.isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Save changes'),
-                    ),
+                  AppButton(
+                    text: 'Save changes',
+                    isLoading: updateState.isLoading,
+                    onPressed: () async {
+                      if (!_formKey.currentState!.validate()) return;
+                      await _submit(
+                        profile.user.role,
+                        createProfile: isCreatingCharityProfile,
+                      );
+                    },
                   ),
+                  const SizedBox(height: AppTheme.spacing32),
                 ],
               ),
             ),
@@ -192,44 +235,44 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _logoPathController.text = '';
   }
 
-    Future<void> _submit(ProfileRole role, {required bool createProfile}) async {
+  Future<void> _submit(ProfileRole role, {required bool createProfile}) async {
     final notifier = ref.read(profileUpdateProvider.notifier);
     if (role == ProfileRole.charity) {
       final updated = createProfile
-        ? await notifier.createCharityProfile(
-          organizationName: _nameController.text.trim(),
-          description: _descriptionController.text.trim(),
-          documentPath: _documentPathController.text.trim(),
-          logoPath: _logoPathController.text.trim().isEmpty
-            ? null
-            : _logoPathController.text.trim(),
-          phone: _phoneController.text.trim().isEmpty
-            ? null
-            : _phoneController.text.trim(),
-          website: _websiteController.text.trim().isEmpty
-            ? null
-            : _websiteController.text.trim(),
-          address: _addressController.text.trim().isEmpty
-            ? null
-            : _addressController.text.trim(),
-        )
-        : await notifier.updateCharityProfile(
-          CharityProfileUpdateInput(
-          organizationName: _nameController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-            ? null
-            : _descriptionController.text.trim(),
-          phone: _phoneController.text.trim().isEmpty
-            ? null
-            : _phoneController.text.trim(),
-          website: _websiteController.text.trim().isEmpty
-            ? null
-            : _websiteController.text.trim(),
-          address: _addressController.text.trim().isEmpty
-            ? null
-            : _addressController.text.trim(),
-          ),
-        );
+          ? await notifier.createCharityProfile(
+              organizationName: _nameController.text.trim(),
+              description: _descriptionController.text.trim(),
+              documentPath: _documentPathController.text.trim(),
+              logoPath: _logoPathController.text.trim().isEmpty
+                  ? null
+                  : _logoPathController.text.trim(),
+              phone: _phoneController.text.trim().isEmpty
+                  ? null
+                  : _phoneController.text.trim(),
+              website: _websiteController.text.trim().isEmpty
+                  ? null
+                  : _websiteController.text.trim(),
+              address: _addressController.text.trim().isEmpty
+                  ? null
+                  : _addressController.text.trim(),
+            )
+          : await notifier.updateCharityProfile(
+              CharityProfileUpdateInput(
+                organizationName: _nameController.text.trim(),
+                description: _descriptionController.text.trim().isEmpty
+                    ? null
+                    : _descriptionController.text.trim(),
+                phone: _phoneController.text.trim().isEmpty
+                    ? null
+                    : _phoneController.text.trim(),
+                website: _websiteController.text.trim().isEmpty
+                    ? null
+                    : _websiteController.text.trim(),
+                address: _addressController.text.trim().isEmpty
+                    ? null
+                    : _addressController.text.trim(),
+              ),
+            );
       if (updated != null && mounted) {
         context.pop();
       }
@@ -240,7 +283,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           phone: _phoneController.text.trim().isEmpty
               ? null
               : _phoneController.text.trim(),
-          bio: _bioController.text.trim().isEmpty ? null : _bioController.text.trim(),
+          bio: _bioController.text.trim().isEmpty
+              ? null
+              : _bioController.text.trim(),
         ),
       );
       if (updated != null && mounted) {
@@ -268,33 +313,39 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
 class _FilePickerButton extends StatelessWidget {
   const _FilePickerButton({
-    required this.label,
     required this.value,
     required this.onPressed,
   });
 
-  final String label;
   final String value;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: 8),
-        OutlinedButton(
-          onPressed: onPressed,
-          child: SizedBox(
-            width: double.infinity,
-            child: Text(
-              value.isEmpty ? 'Choose file' : value.split('/').last,
-              textAlign: TextAlign.center,
-            ),
+    return GestureDetector(
+      onTap: onPressed,
+      child: DashedCard(
+        padding: const EdgeInsets.all(AppTheme.spacing24),
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.cloud_upload_outlined, size: 32, color: AppColors.primary),
+              const SizedBox(height: AppTheme.spacing12),
+              Text(
+                value.isEmpty ? 'Tap to upload' : value.split('/').last,
+                style: AppTextStyles.label.copyWith(color: AppColors.primary),
+                textAlign: TextAlign.center,
+              ),
+              if (value.isEmpty) ...[
+                const SizedBox(height: AppTheme.spacing4),
+                Text('PNG, JPG or PDF (max. 10MB)', style: AppTextStyles.micro),
+              ],
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

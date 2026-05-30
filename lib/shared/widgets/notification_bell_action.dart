@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:charity_managment/features/notifications/presentation/providers/notification_unread_count_provider.dart';
 import 'package:charity_managment/routing/app_routes.dart';
+import 'package:charity_managment/core/theme/app_colors.dart';
+import 'package:charity_managment/core/theme/app_text_styles.dart';
 
 class NotificationBellAction extends ConsumerWidget {
   const NotificationBellAction({super.key});
@@ -25,7 +27,7 @@ class NotificationBellAction extends ConsumerWidget {
       icon: Stack(
         clipBehavior: Clip.none,
         children: [
-          const Icon(Icons.notifications_outlined),
+          const Icon(Icons.notifications_outlined, color: AppColors.textBody),
           if (unreadCount > 0)
             Positioned(
               right: -2,
@@ -47,20 +49,19 @@ class _Badge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final label = count > 99 ? '99+' : count.toString();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       decoration: BoxDecoration(
-        color: colorScheme.error,
+        color: AppColors.error,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: colorScheme.onError,
-          fontWeight: FontWeight.w700,
+        style: AppTextStyles.micro.copyWith(
+          color: AppColors.surface,
+          fontSize: 10,
         ),
       ),
     );
