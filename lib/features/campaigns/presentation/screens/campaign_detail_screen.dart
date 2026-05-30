@@ -271,10 +271,6 @@ class CampaignDetailScreen extends ConsumerWidget {
                     onPressed: campaign.status == CampaignStatus.closed
                         ? null
                         : () {
-                            if (!auth.isAuthenticated) {
-                              _promptSignIn(context);
-                              return;
-                            }
                             showModalBottomSheet(
                               context: context,
                               isScrollControlled: true,
@@ -301,7 +297,7 @@ class CampaignDetailScreen extends ConsumerWidget {
   void _promptSignIn(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Sign in to donate or follow campaigns.'),
+        content: const Text('Sign in to follow campaigns.'),
         action: SnackBarAction(
           label: 'Sign in',
           onPressed: () => context.go(AppRoutes.roleSelection),

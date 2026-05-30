@@ -32,6 +32,8 @@ class Donation {
     required this.status,
     required this.donatedAt,
     this.message,
+    this.guestName,
+    this.guestEmail,
   });
 
   final String id;
@@ -43,6 +45,8 @@ class Donation {
   final DonationStatus status;
   final DateTime donatedAt;
   final String? message;
+  final String? guestName;
+  final String? guestEmail;
 
   Map<String, dynamic> toJson() {
     return {
@@ -55,13 +59,15 @@ class Donation {
       'transactionId': transactionId,
       'status': status.value,
       'donatedAt': donatedAt.toIso8601String(),
+      'guestName': guestName,
+      'guestEmail': guestEmail,
     };
   }
 
   factory Donation.fromJson(Map<String, dynamic> json) {
     return Donation(
       id: json['id'] as String,
-      donorId: json['donorId'] as String,
+      donorId: json['donorId']?.toString() ?? '',
       campaignId: json['campaignId'] as String,
       amount: (json['amount'] as num).toDouble(),
       isAnonymous: json['isAnonymous'] as bool? ?? false,
@@ -69,6 +75,8 @@ class Donation {
       transactionId: json['transactionId'] as String,
       status: DonationStatus.fromJson(json['status'] as String),
       donatedAt: DateTime.parse(json['donatedAt'] as String),
+      guestName: json['guestName'] as String?,
+      guestEmail: json['guestEmail'] as String?,
     );
   }
 }

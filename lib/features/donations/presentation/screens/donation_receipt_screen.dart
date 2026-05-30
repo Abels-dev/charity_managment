@@ -85,7 +85,7 @@ class _ReceiptBody extends ConsumerWidget {
     final auth = ref.watch(authControllerProvider).user;
     final donorName = donation.isAnonymous
         ? 'Anonymous donor'
-        : (auth?.fullName ?? 'Donor');
+      : (donation.guestName ?? auth?.fullName ?? 'Donor');
 
     return ListView(
       padding: const EdgeInsets.all(16),

@@ -44,6 +44,13 @@ class DonationSuccessCard extends StatelessWidget {
               'Transaction ${donation.transactionId}',
               style: theme.textTheme.bodyMedium,
             ),
+            if (donation.guestName != null && donation.guestName!.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                'Donor ${donation.guestName}',
+                style: theme.textTheme.bodyMedium,
+              ),
+            ],
             const SizedBox(height: 6),
             Text(
               'Donated on ${CampaignFormatters.shortDate(donation.donatedAt)}',

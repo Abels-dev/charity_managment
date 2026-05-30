@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:charity_managment/features/donations/domain/donation_create_input.dart';
-import 'package:charity_managment/features/donations/domain/donation_checkout_session.dart';
 import 'package:charity_managment/features/donations/presentation/providers/donation_submission_provider.dart';
 import 'package:charity_managment/models/campaign.dart';
 import 'package:charity_managment/models/donation.dart';
@@ -33,8 +31,9 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _amountController;
   late final TextEditingController _messageController;
+  late final TextEditingController _guestNameController;
+  late final TextEditingController _guestEmailController;
   late final ProviderSubscription<AsyncValue<Donation?>> _submissionSub;
-  late final ProviderSubscription<DonationCheckoutSession?> _checkoutSub;
   bool _isAnonymous = false;
 
   @override
@@ -42,6 +41,8 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
     super.initState();
     _amountController = TextEditingController();
     _messageController = TextEditingController();
+    _guestNameController = TextEditingController();
+    _guestEmailController = TextEditingController();
 
     _submissionSub = ref.listenManual<AsyncValue<Donation?>>(
       donationSubmissionProvider,
@@ -60,44 +61,15 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
         }
       },
     );
-
-    _checkoutSub = ref.listenManual<DonationCheckoutSession?>(
-      donationCheckoutSessionProvider,
-      (previous, next) async {
-        if (next == null || !mounted) return;
-
-        final txRef = next.fields['tx_ref']?.toString() ?? '';
-        if (txRef.isNotEmpty) {
-          final checkoutUrl = 'https://checkout.chapa.co/checkout/payment/$txRef';
-          final uri = Uri.parse(checkoutUrl);
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        } else {
-          final uri = Uri.tryParse(next.actionUrl);
-          if (uri != null) {
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
-          }
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Redirecting to payment...'),
-            duration: Duration(seconds: 6),
-          ),
-        );
-
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-        }
-      },
-    );
   }
 
   @override
   void dispose() {
     _submissionSub.close();
-    _checkoutSub.close();
     _amountController.dispose();
     _messageController.dispose();
+    _guestNameController.dispose();
+    _guestEmailController.dispose();
     super.dispose();
   }
 
@@ -114,16 +86,21 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
     if (amount == null) return;
 
     final user = ref.read(authControllerProvider).user;
-    if (user == null) {
+    final donorName = user?.fullName ?? _guestNameController.text.trim();
+    final donorEmail = user?.email ?? _guestEmailController.text.trim();
+
+    if (user == null && (donorName.isEmpty || donorEmail.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please sign in to donate.')),
+        const SnackBar(content: Text('Please enter your name and email to donate.')),
       );
       return;
     }
 
     await ref.read(donationSubmissionProvider.notifier).submit(
           DonationCreateInput(
-            donorId: user.id,
+            donorId: user?.id,
+            donorName: user == null ? donorName : null,
+            donorEmail: user == null ? donorEmail : null,
             campaignId: widget.campaign.id,
             amount: amount,
             isAnonymous: _isAnonymous,
@@ -139,6 +116,7 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
     final submission = ref.watch(donationSubmissionProvider);
     final isLoading = submission.isLoading;
     final mediaQuery = MediaQuery.of(context);
+    final user = ref.watch(authControllerProvider).user;
 
     return SingleChildScrollView(
       padding: EdgeInsets.only(
@@ -197,6 +175,63 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
               hint: 'Leave a word of support...',
               maxLines: 3,
             ),
+            if (user == null) ...[
+              const SizedBox(height: AppTheme.spacing16),
+              FormInput(
+                controller: _guestNameController,
+                label: 'Full name',
+                hint: 'Enter your name',
+                validator: (value) {
+                  if ((value ?? '').trim().isEmpty) {
+                    return 'Please enter your name.';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: AppTheme.spacing16),
+              FormInput(
+                controller: _guestEmailController,
+                label: 'Email address',
+                hint: 'Enter your email',
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  final text = (value ?? '').trim();
+                  if (text.isEmpty) {
+                    return 'Please enter your email.';
+                  }
+                  if (!text.contains('@') || !text.contains('.')) {
+                    return 'Please enter a valid email address.';
+                  }
+                  return null;
+                },
+              ),
+            ] else ...[
+              const SizedBox(height: AppTheme.spacing16),
+              Container(
+                padding: const EdgeInsets.all(AppTheme.spacing16),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBg,
+                  borderRadius: AppTheme.borderRadiusMd,
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.person_outline, color: AppColors.primary),
+                    const SizedBox(width: AppTheme.spacing12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(user.fullName, style: AppTextStyles.label),
+                          const SizedBox(height: AppTheme.spacing4),
+                          Text(user.email, style: AppTextStyles.micro),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: AppTheme.spacing24),
             Container(
               padding: const EdgeInsets.all(AppTheme.spacing16),

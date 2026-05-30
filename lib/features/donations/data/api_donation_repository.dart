@@ -36,6 +36,8 @@ class ApiDonationRepository implements DonationRepository {
       status: _mapStatus(json['status']),
       donatedAt: donatedAtRaw != null ? DateTime.parse(donatedAtRaw.toString()) : DateTime.now(),
       message: json['message']?.toString(),
+      guestName: json['guestName']?.toString(),
+      guestEmail: json['guestEmail']?.toString(),
     );
   }
 
@@ -68,6 +70,25 @@ class ApiDonationRepository implements DonationRepository {
     } catch (e) {
       throw Exception('Failed to create donation');
     }
+  }
+
+  @override
+  Future<Donation> createDirectDonation(
+    Donation donation, {
+    String? donorName,
+    String? donorEmail,
+  }) async {
+    final response = await _dio.post('/api/campaign/${donation.campaignId}/donate-direct', data: {
+      'amount': donation.amount,
+      'isAnonymous': donation.isAnonymous,
+      'message': donation.message,
+      if (donorName != null) 'guestName': donorName,
+      if (donorEmail != null) 'guestEmail': donorEmail,
+    });
+
+    final data = _asMap(response.data['data']);
+    final donationData = _asMap(data['donation']);
+    return _mapDonation(donationData);
   }
 
   @override
@@ -137,9 +158,11 @@ class ApiDonationRepository implements DonationRepository {
 
   @override
   Future<Donation?> getDonationById(String donationId) async {
-    final history = await getDonationHistory('');
     try {
-      return history.firstWhere((d) => d.id == donationId);
+      final response = await _dio.get('/api/donation/id/$donationId');
+      final data = _asMap(response.data['data']);
+      final donationData = _asMap(data['donation']);
+      return _mapDonation(Map<String, dynamic>.from(donationData));
     } catch (_) {
       return null;
     }
@@ -159,18 +182,21 @@ class ApiDonationRepository implements DonationRepository {
       status: donation.status,
       donatedAt: donation.donatedAt,
       message: donation.message,
+      guestName: donation.guestName,
+      guestEmail: donation.guestEmail,
     );
   }
 
   @override
   Future<DonationReceipt> generateReceipt(Donation donation) async {
     try {
-      final response = await _dio.get('/api/donation/${donation.id}/receipt');
+      final response = await _dio.get('/api/donation/id/${donation.id}/receipt');
       final data = _asMap(response.data['data']);
+      final reference = (data['receiptReference'] ?? data['reference'] ?? 'REC-${donation.id}').toString();
       return DonationReceipt(
-        id: data['id'].toString(),
+        id: reference,
         donationId: donation.id,
-        reference: (data['receiptReference'] ?? data['reference'] ?? 'REC-${donation.id}').toString(),
+        reference: reference,
         issuedAt: data['issuedDate'] != null
             ? DateTime.parse(data['issuedDate'].toString())
             : DateTime.now(),
@@ -182,9 +208,21 @@ class ApiDonationRepository implements DonationRepository {
 
   @override
   Future<DonationReceipt?> getReceiptByDonationId(String donationId) async {
-    final donation = await getDonationById(donationId);
-    if (donation == null) return null;
-    return generateReceipt(donation);
+    try {
+      final response = await _dio.get('/api/donation/id/$donationId/receipt');
+      final data = _asMap(response.data['data']);
+      final reference = (data['receiptReference'] ?? data['reference'] ?? 'REC-$donationId').toString();
+      return DonationReceipt(
+        id: reference,
+        donationId: donationId,
+        reference: reference,
+        issuedAt: data['issuedDate'] != null
+            ? DateTime.parse(data['issuedDate'].toString())
+            : DateTime.now(),
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<String> initiateChapaCheckout({
@@ -219,7 +257,8 @@ class ApiDonationRepository implements DonationRepository {
     try {
       final response = await _dio.get('/api/donation/$txRef');
       final data = _asMap(response.data['data']);
-      return _mapDonation(Map<String, dynamic>.from(data));
+      final donationData = _asMap(data['donation']);
+      return _mapDonation(Map<String, dynamic>.from(donationData));
     } catch (e) {
       throw Exception('Failed to verify payment transaction');
     }
@@ -230,10 +269,12 @@ class ApiDonationRepository implements DonationRepository {
     try {
       final response = await _dio.get('/api/donation/$txRef');
       final data = _asMap(response.data['data']);
-      return _mapDonation(Map<String, dynamic>.from(data));
+      final donationData = _asMap(data['donation']);
+      return _mapDonation(Map<String, dynamic>.from(donationData));
     } catch (e) {
       return null;
     }
   }
+
 }
 
