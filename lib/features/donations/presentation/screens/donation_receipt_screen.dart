@@ -6,12 +6,12 @@ import 'package:charity_managment/features/campaigns/presentation/providers/camp
 import 'package:charity_managment/features/campaigns/presentation/utils/campaign_formatters.dart';
 import 'package:charity_managment/features/donations/presentation/providers/donation_detail_provider.dart';
 import 'package:charity_managment/features/donations/presentation/providers/donation_receipt_provider.dart';
-import 'package:charity_managment/features/donations/presentation/widgets/receipt_info_row.dart';
 import 'package:charity_managment/models/donation.dart';
 import 'package:charity_managment/models/donation_receipt.dart';
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
 import 'package:charity_managment/shared/widgets/empty_state.dart';
+import 'package:charity_managment/core/widgets/app_card.dart';
 
 class DonationReceiptScreen extends ConsumerWidget {
   const DonationReceiptScreen({
@@ -90,51 +90,80 @@ class _ReceiptBody extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Card(
-          elevation: 1,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Donation Receipt',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Reference ${receipt.reference}',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 16),
-                ReceiptInfoRow(label: 'Donor', value: donorName),
-                ReceiptInfoRow(label: 'Campaign', value: campaignTitle),
-                ReceiptInfoRow(
-                  label: 'Amount',
-                  value: CampaignFormatters.money(donation.amount),
-                ),
-                ReceiptInfoRow(
-                  label: 'Date',
-                  value: CampaignFormatters.shortDate(donation.donatedAt),
-                ),
-                ReceiptInfoRow(
-                  label: 'Transaction',
-                  value: donation.transactionId,
-                ),
-                ReceiptInfoRow(
-                  label: 'Status',
-                  value: donation.status.label,
-                ),
-                if (donation.message != null && donation.message!.isNotEmpty)
-                  ReceiptInfoRow(
-                    label: 'Message',
-                    value: donation.message!,
+        AppCard(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                    ),
+                    child: const Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF10B981),
+                      size: 24,
+                    ),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Donation Receipt',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Ref: ${receipt.reference}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _ReceiptField(label: 'Donor', value: donorName),
+              _ReceiptField(label: 'Campaign', value: campaignTitle),
+              _ReceiptField(
+                label: 'Amount',
+                value: CampaignFormatters.money(donation.amount),
+                isHighlight: true,
+              ),
+              _ReceiptField(
+                label: 'Date',
+                value: CampaignFormatters.shortDate(donation.donatedAt),
+              ),
+              _ReceiptField(
+                label: 'Transaction ID',
+                value: donation.transactionId,
+              ),
+              _ReceiptField(
+                label: 'Status',
+                value: donation.status.label,
+              ),
+              if (donation.message != null && donation.message!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _ReceiptField(
+                  label: 'Message',
+                  value: donation.message!,
+                ),
               ],
-            ),
+            ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         Row(
           children: [
             Expanded(
@@ -163,6 +192,51 @@ class _ReceiptBody extends ConsumerWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _ReceiptField extends StatelessWidget {
+  const _ReceiptField({
+    required this.label,
+    required this.value,
+    this.isHighlight = false,
+  });
+
+  final String label;
+  final String value;
+  final bool isHighlight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 90,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: const Color(0xFF64748B),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: isHighlight ? FontWeight.bold : FontWeight.w500,
+                color: isHighlight ? const Color(0xFF10B981) : null,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

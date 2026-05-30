@@ -9,6 +9,12 @@ import 'package:charity_managment/features/donations/presentation/providers/dona
 import 'package:charity_managment/models/campaign.dart';
 import 'package:charity_managment/models/donation.dart';
 
+import 'package:charity_managment/core/widgets/app_button.dart';
+import 'package:charity_managment/core/widgets/form_input.dart';
+import 'package:charity_managment/core/theme/app_theme.dart';
+import 'package:charity_managment/core/theme/app_text_styles.dart';
+import 'package:charity_managment/core/theme/app_colors.dart';
+
 class DonationFormSheet extends ConsumerStatefulWidget {
   const DonationFormSheet({
     super.key,
@@ -129,10 +135,10 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
 
     return Padding(
       padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 20,
-        bottom: mediaQuery.viewInsets.bottom + 24,
+        left: AppTheme.spacing24,
+        right: AppTheme.spacing24,
+        top: AppTheme.spacing32,
+        bottom: mediaQuery.viewInsets.bottom + AppTheme.spacing24,
       ),
       child: Form(
         key: _formKey,
@@ -142,16 +148,30 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
           children: [
             Text(
               'Donate to ${widget.campaign.title}',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: AppTextStyles.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 12),
-            TextFormField(
+            const SizedBox(height: AppTheme.spacing8),
+            Text(
+              'Enter the amount you wish to contribute to this campaign.',
+              style: AppTextStyles.body,
+            ),
+            const SizedBox(height: AppTheme.spacing24),
+            FormInput(
               controller: _amountController,
+              label: 'Donation amount',
+              hint: '0.00',
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Donation amount',
-                prefixText: 'USD ',
-                border: OutlineInputBorder(),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(left: AppTheme.spacing16, right: AppTheme.spacing8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('ETB', style: AppTextStyles.label.copyWith(color: AppColors.textBody)),
+                  ],
+                ),
               ),
               validator: (_) {
                 final amount = _parseAmount();
@@ -164,44 +184,57 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
                 return null;
               },
             ),
-            const SizedBox(height: 12),
-            SwitchListTile.adaptive(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Donate anonymously'),
-              subtitle: const Text('Hide your identity from the campaign creator.'),
-              value: _isAnonymous,
-              onChanged: isLoading
-                  ? null
-                  : (value) {
-                      setState(() {
-                        _isAnonymous = value;
-                      });
-                    },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
+            const SizedBox(height: AppTheme.spacing16),
+            FormInput(
               controller: _messageController,
+              label: 'Optional message',
+              hint: 'Leave a word of support...',
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Optional message',
-                border: OutlineInputBorder(),
+            ),
+            const SizedBox(height: AppTheme.spacing24),
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing16),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBg,
+                borderRadius: AppTheme.borderRadiusMd,
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Donate anonymously', style: AppTextStyles.label),
+                        const SizedBox(height: AppTheme.spacing4),
+                        Text(
+                          'Hide your identity from the campaign creator.',
+                          style: AppTextStyles.micro,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch.adaptive(
+                    value: _isAnonymous,
+                    activeThumbColor: AppColors.primary,
+                    onChanged: isLoading
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _isAnonymous = value;
+                            });
+                          },
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: isLoading ? null : _submit,
-                child: isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Confirm Donation'),
-              ),
+            const SizedBox(height: AppTheme.spacing32),
+            AppButton(
+              text: 'Confirm Donation',
+              isLoading: isLoading,
+              onPressed: _submit,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppTheme.spacing12),
           ],
         ),
       ),

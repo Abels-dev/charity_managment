@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:charity_managment/core/widgets/app_card.dart';
+import 'package:charity_managment/core/theme/app_colors.dart';
+import 'package:charity_managment/core/theme/app_text_styles.dart';
+import 'package:charity_managment/core/theme/app_theme.dart';
+
 class DashboardStatCard extends StatelessWidget {
   const DashboardStatCard({
     super.key,
@@ -16,41 +21,42 @@ class DashboardStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final background = (tint ?? colorScheme.primary).withValues(alpha: 0.12);
+    final accentColor = tint ?? AppColors.primary;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            Container(
-              height: 40,
-              width: 40,
-              decoration: BoxDecoration(
-                color: background,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: tint ?? colorScheme.primary),
+    return AppCard(
+      padding: const EdgeInsets.all(AppTheme.spacing16),
+      child: Row(
+        children: [
+          Container(
+            height: 44,
+            width: 44,
+            decoration: BoxDecoration(
+              color: accentColor.withOpacity(0.1),
+              borderRadius: AppTheme.borderRadiusMd,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: Theme.of(context).textTheme.bodySmall),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+            child: Icon(icon, color: accentColor, size: 22),
+          ),
+          const SizedBox(width: AppTheme.spacing12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.micro.copyWith(color: AppColors.textBody),
+                ),
+                const SizedBox(height: AppTheme.spacing4),
+                Text(
+                  value,
+                  style: AppTextStyles.title.copyWith(
+                    fontSize: 18,
+                    color: AppColors.textPrimary,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

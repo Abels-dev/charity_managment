@@ -9,13 +9,18 @@ import 'package:charity_managment/features/charity_dashboard/presentation/provid
 import 'package:charity_managment/features/charity_dashboard/presentation/providers/dashboard_summary_provider.dart';
 import 'package:charity_managment/features/charity_dashboard/presentation/providers/recent_donations_provider.dart';
 import 'package:charity_managment/features/charity_dashboard/presentation/widgets/campaign_analytics_card.dart';
-import 'package:charity_managment/features/charity_dashboard/presentation/widgets/dashboard_section_header.dart';
 import 'package:charity_managment/features/charity_dashboard/presentation/widgets/dashboard_stat_card.dart';
 import 'package:charity_managment/features/charity_dashboard/presentation/widgets/donation_activity_card.dart';
 import 'package:charity_managment/routing/app_routes.dart';
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
-import 'package:charity_managment/shared/widgets/empty_state.dart';
+
+import 'package:charity_managment/core/widgets/empty_state.dart';
+import 'package:charity_managment/core/widgets/loading_skeleton.dart';
+import 'package:charity_managment/core/widgets/app_button.dart';
+import 'package:charity_managment/core/theme/app_colors.dart';
+import 'package:charity_managment/core/theme/app_text_styles.dart';
+import 'package:charity_managment/core/theme/app_theme.dart';
 
 class CharityDashboardScreen extends ConsumerWidget {
   const CharityDashboardScreen({super.key});
@@ -73,32 +78,56 @@ class CharityDashboardScreen extends ConsumerWidget {
     final closingIds = ref.watch(closeCampaignProvider).valueOrNull ?? <String>{};
 
     return AppScaffold(
-      title: 'Charity Dashboard',
+      title: 'Dashboard',
       drawer: const AppNavigationDrawer(),
       body: RefreshIndicator(
         onRefresh: () => _refresh(ref),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            _QuickActionsRow(
-              onMyCampaigns: () => context.go(AppRoutes.myCampaigns),
-              onCreateCampaign: () => context.go(AppRoutes.createCampaign),
-              onContributions: () => context.go(AppRoutes.charityContributions),
-              onRequests: () => context.go(AppRoutes.charityCampaignRequests),
-              onBankAccounts: () => context.go(AppRoutes.bankAccounts),
-              onNotifications: () => context.go(AppRoutes.notifications),
-              onProfile: () => context.go(AppRoutes.profile),
+            // Quick Actions
+            SizedBox(
+              height: 44,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  _QuickActionChip(
+                    icon: Icons.campaign,
+                    label: 'My Campaigns',
+                    onTap: () => context.go(AppRoutes.myCampaigns),
+                  ),
+                  _QuickActionChip(
+                    icon: Icons.add_circle_outline,
+                    label: 'Create',
+                    onTap: () => context.go(AppRoutes.createCampaign),
+                  ),
+                  _QuickActionChip(
+                    icon: Icons.volunteer_activism,
+                    label: 'Contributions',
+                    onTap: () => context.go(AppRoutes.charityContributions),
+                  ),
+                  _QuickActionChip(
+                    icon: Icons.account_balance_outlined,
+                    label: 'Bank Accounts',
+                    onTap: () => context.go(AppRoutes.bankAccounts),
+                  ),
+                  _QuickActionChip(
+                    icon: Icons.person_outline,
+                    label: 'Profile',
+                    onTap: () => context.go(AppRoutes.profile),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            const DashboardSectionHeader(
-              title: 'Overview',
-              subtitle: 'Live snapshot of your charity performance.',
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.spacing24),
+
+            // Section Header: Overview
+            _SectionHeader(title: 'Overview'),
+            const SizedBox(height: AppTheme.spacing12),
             summaryAsync.when(
-              loading: () => const _DashboardSummaryLoading(),
+              loading: () => _StatGridSkeleton(),
               error: (error, _) => _SectionErrorState(
-                title: 'Unable to load dashboard summary',
+                title: 'Unable to load summary',
                 message: error.toString(),
                 onRetry: () => _refresh(ref),
               ),
@@ -108,32 +137,46 @@ class CharityDashboardScreen extends ConsumerWidget {
                     onCreate: () => context.go(AppRoutes.createCampaign),
                   );
                 }
-
                 return _DashboardSummaryGrid(summary: summary);
               },
             ),
-            const SizedBox(height: 20),
-            DashboardSectionHeader(
-              title: 'Campaign performance',
-              subtitle: 'Track the progress of each campaign.',
-              trailing: TextButton(
-                onPressed: () => context.go(AppRoutes.myCampaigns),
-                child: const Text('My campaigns'),
-              ),
+            const SizedBox(height: AppTheme.spacing24),
+
+            // Section Header: Campaign Performance
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _SectionHeader(title: 'Campaign Performance'),
+                GestureDetector(
+                  onTap: () => context.go(AppRoutes.myCampaigns),
+                  child: Text(
+                    'View all',
+                    style: AppTextStyles.label.copyWith(color: AppColors.primary),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.spacing12),
             analyticsAsync.when(
-              loading: () => const _SectionLoading(height: 180),
+              loading: () => Column(
+                children: [
+                  for (int i = 0; i < 2; i++) ...[
+                    const LoadingSkeleton(height: 140, borderRadius: AppTheme.radiusLg),
+                    const SizedBox(height: AppTheme.spacing12),
+                  ],
+                ],
+              ),
               error: (error, _) => _SectionErrorState(
-                title: 'Unable to load campaign analytics',
+                title: 'Unable to load analytics',
                 message: error.toString(),
                 onRetry: () => _refresh(ref),
               ),
               data: (campaigns) {
                 if (campaigns.isEmpty) {
-                  return EmptyState(
+                  return const EmptyState(
+                    icon: Icons.bar_chart_outlined,
                     title: 'No campaign analytics yet',
-                    subtitle: 'Launch your first campaign to see performance insights.',
+                    message: 'Launch your first campaign to see performance insights.',
                   );
                 }
 
@@ -155,30 +198,37 @@ class CharityDashboardScreen extends ConsumerWidget {
                           analytics.campaignId,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppTheme.spacing12),
                     ],
                   ],
                 );
               },
             ),
-            const SizedBox(height: 8),
-            const DashboardSectionHeader(
-              title: 'Recent donations',
-              subtitle: 'Latest contributions across your campaigns.',
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppTheme.spacing12),
+
+            // Section Header: Recent Donations
+            _SectionHeader(title: 'Recent Donations'),
+            const SizedBox(height: AppTheme.spacing12),
             donationsAsync.when(
-              loading: () => const _SectionLoading(height: 140),
+              loading: () => Column(
+                children: [
+                  for (int i = 0; i < 3; i++) ...[
+                    const LoadingSkeleton(height: 80, borderRadius: AppTheme.radiusLg),
+                    const SizedBox(height: AppTheme.spacing12),
+                  ],
+                ],
+              ),
               error: (error, _) => _SectionErrorState(
-                title: 'Unable to load donation activity',
+                title: 'Unable to load donations',
                 message: error.toString(),
                 onRetry: () => _refresh(ref),
               ),
               data: (donations) {
                 if (donations.isEmpty) {
                   return const EmptyState(
+                    icon: Icons.volunteer_activism_outlined,
                     title: 'No donations yet',
-                    subtitle: 'Once donations arrive, they will appear here instantly.',
+                    message: 'Once donations arrive, they will appear here instantly.',
                   );
                 }
 
@@ -186,12 +236,13 @@ class CharityDashboardScreen extends ConsumerWidget {
                   children: [
                     for (final donation in donations) ...[
                       DonationActivityCard(activity: donation),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: AppTheme.spacing12),
                     ],
                   ],
                 );
               },
             ),
+            const SizedBox(height: AppTheme.spacing32),
           ],
         ),
       ),
@@ -199,67 +250,47 @@ class CharityDashboardScreen extends ConsumerWidget {
   }
 }
 
-class _QuickActionsRow extends StatelessWidget {
-  const _QuickActionsRow({
-    required this.onMyCampaigns,
-    required this.onCreateCampaign,
-    required this.onContributions,
-    required this.onRequests,
-    required this.onBankAccounts,
-    required this.onNotifications,
-    required this.onProfile,
-  });
+// ─── Private Widgets ─────────────────────────────────────────
 
-  final VoidCallback onMyCampaigns;
-  final VoidCallback onCreateCampaign;
-  final VoidCallback onContributions;
-  final VoidCallback onRequests;
-  final VoidCallback onBankAccounts;
-  final VoidCallback onNotifications;
-  final VoidCallback onProfile;
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title});
+  final String title;
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        FilledButton.icon(
-          onPressed: onMyCampaigns,
-          icon: const Icon(Icons.campaign),
-          label: const Text('My Campaigns'),
-        ),
-        FilledButton.icon(
-          onPressed: onCreateCampaign,
-          icon: const Icon(Icons.add_circle_outline),
-          label: const Text('Create'),
-        ),
-        OutlinedButton.icon(
-          onPressed: onContributions,
-          icon: const Icon(Icons.volunteer_activism),
-          label: const Text('Contributions'),
-        ),
-        OutlinedButton.icon(
-          onPressed: onRequests,
-          icon: const Icon(Icons.inbox_outlined),
-          label: const Text('Requests'),
-        ),
-        OutlinedButton.icon(
-          onPressed: onBankAccounts,
-          icon: const Icon(Icons.account_balance_outlined),
-          label: const Text('Bank Accounts'),
-        ),
-        OutlinedButton.icon(
-          onPressed: onNotifications,
-          icon: const Icon(Icons.notifications_outlined),
-          label: const Text('Notifications'),
-        ),
-        OutlinedButton.icon(
-          onPressed: onProfile,
-          icon: const Icon(Icons.person_outline),
-          label: const Text('Profile'),
-        ),
-      ],
+    return Text(
+      title,
+      style: AppTextStyles.label.copyWith(
+        fontSize: 16,
+        color: AppColors.textPrimary,
+      ),
+    );
+  }
+}
+
+class _QuickActionChip extends StatelessWidget {
+  const _QuickActionChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: AppTheme.spacing8),
+      child: ActionChip(
+        avatar: Icon(icon, size: 16, color: AppColors.primary),
+        label: Text(label, style: AppTextStyles.micro.copyWith(color: AppColors.textPrimary)),
+        backgroundColor: AppColors.surface,
+        side: const BorderSide(color: AppColors.border),
+        shape: RoundedRectangleBorder(borderRadius: AppTheme.borderRadiusPill),
+        onPressed: onTap,
+      ),
     );
   }
 }
@@ -275,7 +306,7 @@ class _DashboardSummaryGrid extends StatelessWidget {
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth;
         final columns = maxWidth > 560 ? 3 : 2;
-        final spacing = 12.0;
+        const spacing = 12.0;
         final itemWidth = (maxWidth - (spacing * (columns - 1))) / columns;
 
         return Wrap(
@@ -285,7 +316,7 @@ class _DashboardSummaryGrid extends StatelessWidget {
             SizedBox(
               width: itemWidth,
               child: DashboardStatCard(
-                title: 'Total campaigns',
+                title: 'TOTAL CAMPAIGNS',
                 value: summary.totalCampaigns.toString(),
                 icon: Icons.view_list,
               ),
@@ -293,37 +324,35 @@ class _DashboardSummaryGrid extends StatelessWidget {
             SizedBox(
               width: itemWidth,
               child: DashboardStatCard(
-                title: 'Active campaigns',
+                title: 'ACTIVE',
                 value: summary.activeCampaigns.toString(),
                 icon: Icons.play_circle_outline,
-                tint: Colors.green,
+                tint: AppColors.primary,
               ),
             ),
             SizedBox(
               width: itemWidth,
               child: DashboardStatCard(
-                title: 'Closed campaigns',
-                value: summary.closedCampaigns.toString(),
-                icon: Icons.lock_outline,
-                tint: Colors.orange,
-              ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              child: DashboardStatCard(
-                title: 'Total raised',
+                title: 'TOTAL RAISED',
                 value: CampaignFormatters.money(summary.totalRaised),
                 icon: Icons.savings_outlined,
-                tint: Colors.indigo,
               ),
             ),
             SizedBox(
               width: itemWidth,
               child: DashboardStatCard(
-                title: 'Total donors',
+                title: 'TOTAL DONORS',
                 value: summary.totalDonors.toString(),
                 icon: Icons.group_outlined,
-                tint: Colors.teal,
+              ),
+            ),
+            SizedBox(
+              width: itemWidth,
+              child: DashboardStatCard(
+                title: 'CLOSED',
+                value: summary.closedCampaigns.toString(),
+                icon: Icons.lock_outline,
+                tint: const Color(0xFFEA580C),
               ),
             ),
           ],
@@ -333,25 +362,17 @@ class _DashboardSummaryGrid extends StatelessWidget {
   }
 }
 
-class _DashboardSummaryLoading extends StatelessWidget {
-  const _DashboardSummaryLoading();
-
+class _StatGridSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const _SectionLoading(height: 180);
-  }
-}
-
-class _SectionLoading extends StatelessWidget {
-  const _SectionLoading({required this.height});
-
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: const Center(child: CircularProgressIndicator()),
+    return const Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        SizedBox(width: 160, child: LoadingSkeleton(height: 80, borderRadius: AppTheme.radiusLg)),
+        SizedBox(width: 160, child: LoadingSkeleton(height: 80, borderRadius: AppTheme.radiusLg)),
+        SizedBox(width: 160, child: LoadingSkeleton(height: 80, borderRadius: AppTheme.radiusLg)),
+      ],
     );
   }
 }
@@ -371,12 +392,12 @@ class _SectionErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        EmptyState(title: title, subtitle: message),
-        const SizedBox(height: 8),
-        OutlinedButton.icon(
-          onPressed: onRetry,
-          icon: const Icon(Icons.refresh),
-          label: const Text('Retry'),
+        EmptyState(
+          icon: Icons.error_outline,
+          title: title,
+          message: message,
+          actionLabel: 'Retry',
+          onAction: onRetry,
         ),
       ],
     );
@@ -393,13 +414,14 @@ class _EmptyOverviewState extends StatelessWidget {
     return Column(
       children: [
         const EmptyState(
+          icon: Icons.campaign_outlined,
           title: 'No campaigns yet',
-          subtitle: 'Create a campaign to start tracking your impact.',
+          message: 'Create a campaign to start tracking your impact.',
         ),
-        const SizedBox(height: 8),
-        FilledButton(
+        const SizedBox(height: AppTheme.spacing12),
+        AppButton(
+          text: 'Create Campaign',
           onPressed: onCreate,
-          child: const Text('Create Campaign'),
         ),
       ],
     );

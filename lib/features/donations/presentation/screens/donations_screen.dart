@@ -9,7 +9,8 @@ import 'package:charity_managment/models/donation.dart';
 import 'package:charity_managment/routing/app_routes.dart';
 import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
-import 'package:charity_managment/shared/widgets/empty_state.dart';
+import 'package:charity_managment/core/widgets/empty_state.dart';
+import 'package:charity_managment/core/widgets/loading_skeleton.dart';
 
 class DonationsScreen extends ConsumerWidget {
   const DonationsScreen({super.key});
@@ -22,21 +23,28 @@ class DonationsScreen extends ConsumerWidget {
       title: 'Donations',
       drawer: const AppNavigationDrawer(),
       body: donationsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => ListView.separated(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          itemCount: 5,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (_, __) => const LoadingSkeleton(height: 140),
+        ),
         error: (error, _) => EmptyState(
+          icon: Icons.error_outline,
           title: 'Unable to load donations',
-          subtitle: error.toString(),
+          message: error.toString(),
         ),
         data: (donations) {
           if (donations.isEmpty) {
             return const EmptyState(
+              icon: Icons.volunteer_activism,
               title: 'No donations yet',
-              subtitle: 'Support a campaign to see your donation history here.',
+              message: 'Support a campaign to see your donation history here.',
             );
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
             itemCount: donations.length,
             separatorBuilder: (_, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {

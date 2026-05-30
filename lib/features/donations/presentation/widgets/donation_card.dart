@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:charity_managment/core/theme/app_colors.dart';
+import 'package:charity_managment/core/theme/app_text_styles.dart';
+import 'package:charity_managment/core/widgets/app_button.dart';
+import 'package:charity_managment/core/widgets/app_card.dart';
 import 'package:charity_managment/features/campaigns/presentation/utils/campaign_formatters.dart';
 import 'package:charity_managment/models/donation.dart';
 
@@ -17,51 +21,46 @@ class DonationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
+    return AppCard(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      campaignTitle,
-                      style: theme.textTheme.titleMedium,
-                    ),
-                  ),
-                  _DonationStatusBadge(status: donation.status),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                CampaignFormatters.money(donation.amount),
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  campaignTitle,
+                  style: AppTextStyles.label.copyWith(fontSize: 16),
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Donated on ${CampaignFormatters.shortDate(donation.donatedAt)}',
-                style: theme.textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                donation.isAnonymous ? 'Anonymous donation' : 'Donor visible',
-                style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.outline),
-              ),
+              _DonationStatusBadge(status: donation.status),
             ],
           ),
-        ),
+          const SizedBox(height: 8),
+          Text(
+            CampaignFormatters.money(donation.amount),
+            style: AppTextStyles.title.copyWith(color: AppColors.primary),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Donated on ${CampaignFormatters.shortDate(donation.donatedAt)}',
+            style: AppTextStyles.micro,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            donation.isAnonymous ? 'Anonymous donation' : 'Donor visible',
+            style: AppTextStyles.micro.copyWith(color: AppColors.textBody.withValues(alpha: 0.7)),
+          ),
+          const SizedBox(height: 16),
+          AppButton(
+            text: 'View Receipt',
+            type: AppButtonType.secondary,
+            onPressed: onTap,
+            icon: const Icon(Icons.receipt_long, size: 18),
+          ),
+        ],
       ),
     );
   }
@@ -76,23 +75,25 @@ class _DonationStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final (background, foreground) = switch (status) {
-      DonationStatus.completed => (colorScheme.primaryContainer, colorScheme.onPrimaryContainer),
-      DonationStatus.pending => (colorScheme.tertiaryContainer, colorScheme.onTertiaryContainer),
-      DonationStatus.failed => (colorScheme.errorContainer, colorScheme.onErrorContainer),
-      DonationStatus.refunded => (colorScheme.secondaryContainer, colorScheme.onSecondaryContainer),
+      DonationStatus.completed => (AppColors.primaryBg, AppColors.primary),
+      DonationStatus.pending => (Colors.amber.shade50, Colors.amber.shade900),
+      DonationStatus.failed => (Colors.red.shade50, AppColors.error),
+      DonationStatus.refunded => (AppColors.border, AppColors.textPrimary),
     };
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         status.label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: foreground),
+        style: AppTextStyles.micro.copyWith(
+          color: foreground,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
