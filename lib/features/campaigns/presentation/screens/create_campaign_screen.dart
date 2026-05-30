@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
+import 'dart:convert' show base64;
+import 'dart:developer' as developer;
 
 import 'package:charity_managment/features/campaigns/presentation/providers/create_campaign_provider.dart';
 import 'package:charity_managment/features/campaigns/presentation/widgets/campaign_form.dart';
@@ -64,22 +66,55 @@ class _CreateCampaignScreenState extends ConsumerState<CreateCampaignScreen> {
   }
 
   Future<void> _pickImage() async {
-    final result = await FilePicker.platform.pickFiles(withData: false);
-    final path = result?.files.single.path;
-    if (path != null) {
-      setState(() => _imageUrlController.text = path);
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        withData: true, // Enable bytes for web
+      );
+      
+      if (result == null || result.files.isEmpty) return;
+      
+      final file = result.files.single;
+      
+      // For web, use bytes; for mobile, use path
+      if (file.bytes != null) {
+        // Web: Store bytes as base64
+        final base64Data = 'data:image/jpg;base64,' + base64.encode(file.bytes!).toString();
+        if (mounted) {
+          setState(() => _imageUrlController.text = base64Data);
+        }
+      } else if (file.path != null) {
+        // Mobile: Use path
+        if (mounted) {
+          setState(() => _imageUrlController.text = file.path!);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking image: $e')),
+        );
+      }
     }
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    developer.log('Submit: Starting form validation', name: 'create_campaign');
+    
+    if (!_formKey.currentState!.validate()) {
+      developer.log('Submit: Form validation failed', name: 'create_campaign');
+      return;
+    }
+    
     if (_startDate == null || _endDate == null) {
+      developer.log('Submit: Missing dates', name: 'create_campaign');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select start and end dates.')),
       );
       return;
     }
     if (_endDate!.isBefore(_startDate!)) {
+      developer.log('Submit: End date before start date', name: 'create_campaign');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('End date must be after start date.')),
       );
@@ -87,23 +122,35 @@ class _CreateCampaignScreenState extends ConsumerState<CreateCampaignScreen> {
     }
 
     final target = double.parse(_targetAmountController.text.trim());
+    developer.log('Submit: All validations passed, calling create', name: 'create_campaign');
 
-    final created = await ref.read(createCampaignProvider.notifier).create(
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim(),
-          imageUrl: _imageUrlController.text.trim(),
-          targetAmount: target,
-          startDate: _startDate!,
-          endDate: _endDate!,
+    try {
+      final created = await ref.read(createCampaignProvider.notifier).create(
+            title: _titleController.text.trim(),
+            description: _descriptionController.text.trim(),
+            imageUrl: _imageUrlController.text.trim(),
+            targetAmount: target,
+            startDate: _startDate!,
+            endDate: _endDate!,
+          );
+
+      if (!mounted) return;
+
+      if (created != null) {
+        developer.log('Submit: Campaign created successfully', name: 'create_campaign');
+        ref.read(createCampaignProvider.notifier).clear();
+        context.go(AppRoutes.myCampaigns);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Campaign created and active.')),
         );
-
-    if (!mounted) return;
-
-    if (created != null) {
-      ref.read(createCampaignProvider.notifier).clear();
-      context.go(AppRoutes.myCampaigns);
+      } else {
+        developer.log('Submit: Campaign creation returned null', name: 'create_campaign');
+      }
+    } catch (e) {
+      developer.log('Submit: Error creating campaign: $e', name: 'create_campaign', error: e);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Campaign created and active.')),
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }

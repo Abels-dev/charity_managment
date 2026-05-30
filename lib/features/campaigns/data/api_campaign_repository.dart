@@ -4,6 +4,7 @@ import 'package:charity_managment/features/campaigns/domain/campaign_update_inpu
 import 'package:charity_managment/models/campaign.dart';
 import 'package:charity_managment/repositories/campaign_repository.dart';
 import 'package:dio/dio.dart';
+import 'dart:convert' show base64Decode;
 
 class ApiCampaignRepository implements CampaignRepository {
   ApiCampaignRepository(this._dio);
@@ -170,14 +171,11 @@ class ApiCampaignRepository implements CampaignRepository {
   @override
   Future<List<Campaign>> getMyCampaigns(String charityId) async {
     try {
-      // Fetch all public campaigns and filter by charity id so this works
-      // for both public views and the charity's own dashboard without
-      // depending on an authenticated 'my-campaigns' endpoint.
-      final response = await _dio.get('/api/campaign/all');
-      final campaigns = _mapCampaigns(response.data['data']);
-      return campaigns.where((c) => c.charityId == charityId).toList(growable: false);
+      final response = await _dio.get('/api/campaign/my-campaigns');
+      final List items = response.data['data'] ?? const [];
+      return _mapCampaigns(items);
     } catch (e) {
-      throw Exception('Failed to fetch my campaigns');
+      rethrow;
     }
   }
 
@@ -204,8 +202,33 @@ class ApiCampaignRepository implements CampaignRepository {
       String? imageUrl;
       if (input.imageUrl.isNotEmpty && input.imageUrl != 'https://via.placeholder.com/600x400') {
         if (input.imageUrl.startsWith('http')) {
+          // Already a network URL
           imageUrl = input.imageUrl;
+        } else if (input.imageUrl.startsWith('data:image')) {
+          // Base64 data URL from web - upload as multipart form data to avoid payload limit
+          try {
+            final base64String = input.imageUrl.split(',').last;
+            final bytes = base64Decode(base64String);
+            
+            final uploadForm = FormData();
+            uploadForm.files.add(
+              MapEntry(
+                'image',
+                MultipartFile.fromBytes(
+                  bytes,
+                  filename: 'campaign_image.jpg',
+                ),
+              ),
+            );
+
+            final uploadResp = await _dio.post('/api/campaign/image', data: uploadForm);
+            imageUrl = uploadResp.data['data']?['imageUrl']?.toString();
+          } catch (e) {
+            // If upload fails, don't include image
+            imageUrl = null;
+          }
         } else {
+          // Local file path from mobile - upload it
           try {
             final uploadForm = FormData();
             uploadForm.files.add(
@@ -219,10 +242,10 @@ class ApiCampaignRepository implements CampaignRepository {
             );
 
             final uploadResp = await _dio.post('/api/campaign/image', data: uploadForm);
-            imageUrl = uploadResp.data['imageUrl']?.toString();
+            imageUrl = uploadResp.data['data']?['imageUrl']?.toString();
           } catch (_) {
-            // If upload fails, fall back to sending the original value (might be a remote URL)
-            imageUrl = input.imageUrl;
+            // If upload fails, don't include image
+            imageUrl = null;
           }
         }
       }
@@ -239,10 +262,11 @@ class ApiCampaignRepository implements CampaignRepository {
       final response = await _dio.post('/api/campaign/create', data: payload);
       return _mapCampaign(response.data['data']);
     } catch (e) {
-      throw Exception('Failed to create campaign');
+      rethrow;
     }
   }
 
+  @override
   @override
   Future<Campaign> updateCampaign(CampaignUpdateInput input) async {
     try {
@@ -250,7 +274,30 @@ class ApiCampaignRepository implements CampaignRepository {
       if (input.imageUrl.isNotEmpty && input.imageUrl != 'https://via.placeholder.com/600x400') {
         if (input.imageUrl.startsWith('http')) {
           imageUrl = input.imageUrl;
+        } else if (input.imageUrl.startsWith('data:image')) {
+          // Base64 data URL from web - upload as multipart form data
+          try {
+            final base64String = input.imageUrl.split(',').last;
+            final bytes = base64Decode(base64String);
+            
+            final uploadForm = FormData();
+            uploadForm.files.add(
+              MapEntry(
+                'image',
+                MultipartFile.fromBytes(
+                  bytes,
+                  filename: 'campaign_image.jpg',
+                ),
+              ),
+            );
+
+            final uploadResp = await _dio.post('/api/campaign/image', data: uploadForm);
+            imageUrl = uploadResp.data['data']?['imageUrl']?.toString();
+          } catch (_) {
+            imageUrl = null;
+          }
         } else {
+          // Local file path from mobile
           try {
             final uploadForm = FormData();
             uploadForm.files.add(
@@ -266,7 +313,7 @@ class ApiCampaignRepository implements CampaignRepository {
             final uploadResp = await _dio.post('/api/campaign/image', data: uploadForm);
             imageUrl = uploadResp.data['imageUrl']?.toString();
           } catch (_) {
-            imageUrl = input.imageUrl;
+            imageUrl = null;
           }
         }
       }

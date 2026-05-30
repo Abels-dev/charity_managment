@@ -70,10 +70,11 @@ class MyCampaignsScreen extends ConsumerWidget {
         onRefresh: () => _refresh(ref),
         child: myCampaignsAsync.when(
           loading: () => ListView.separated(
+            padding: const EdgeInsets.all(AppTheme.spacing16),
             physics: const AlwaysScrollableScrollPhysics(),
             itemCount: 4,
-            separatorBuilder: (_, index) => const SizedBox(height: 12),
-            itemBuilder: (_, index) => const LoadingSkeleton(height: 140, borderRadius: AppTheme.radiusLg),
+            separatorBuilder: (_, index) => const SizedBox(height: AppTheme.spacing16),
+            itemBuilder: (_, index) => const LoadingSkeleton(height: 200, borderRadius: AppTheme.radiusLg),
           ),
           error: (error, _) => ListView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -95,7 +96,7 @@ class MyCampaignsScreen extends ConsumerWidget {
                     title: 'No campaigns yet',
                     message: 'Create your first campaign to start raising support.',
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppTheme.spacing12),
                   Center(
                     child: FilledButton(
                       onPressed: () => context.go(AppRoutes.createCampaign),
@@ -107,9 +108,10 @@ class MyCampaignsScreen extends ConsumerWidget {
             }
 
             return ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing16, vertical: AppTheme.spacing8),
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: campaigns.length,
-              separatorBuilder: (_, index) => const SizedBox(height: 12),
+              separatorBuilder: (_, index) => const SizedBox(height: AppTheme.spacing16),
               itemBuilder: (context, index) {
                 final campaign = campaigns[index];
                 return MyCampaignCard(

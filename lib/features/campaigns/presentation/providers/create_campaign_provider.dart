@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
@@ -25,8 +26,11 @@ class CreateCampaignController extends StateNotifier<AsyncValue<Campaign?>> {
     required DateTime startDate,
     required DateTime endDate,
   }) async {
+    developer.log('CreateCampaign: Starting campaign creation', name: 'campaign.create');
+    
     final user = _ref.read(authControllerProvider).user;
     if (user == null) {
+      developer.log('CreateCampaign: User not authenticated', name: 'campaign.create');
       state = AsyncValue.error('You must be signed in.', StackTrace.current);
       return null;
     }
@@ -34,6 +38,8 @@ class CreateCampaignController extends StateNotifier<AsyncValue<Campaign?>> {
     state = const AsyncValue.loading();
 
     try {
+      developer.log('CreateCampaign: Creating campaign with title: $title', name: 'campaign.create');
+      
       final repository = _ref.read(campaignRepositoryProvider);
       final campaign = await repository.createCampaign(
         CampaignCreateInput(
@@ -47,6 +53,8 @@ class CreateCampaignController extends StateNotifier<AsyncValue<Campaign?>> {
           endDate: endDate,
         ),
       );
+
+      developer.log('CreateCampaign: Campaign created successfully: ${campaign.id}', name: 'campaign.create');
 
       _ref.invalidate(myCampaignsProvider);
       _ref.invalidate(campaignsListProvider);
@@ -69,6 +77,7 @@ class CreateCampaignController extends StateNotifier<AsyncValue<Campaign?>> {
       state = AsyncValue.data(campaign);
       return campaign;
     } catch (error, stackTrace) {
+      developer.log('CreateCampaign: Error creating campaign: $error', name: 'campaign.create', error: error, stackTrace: stackTrace);
       state = AsyncValue.error(error, stackTrace);
       return null;
     }

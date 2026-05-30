@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert' show base64Decode;
 import 'package:flutter/material.dart';
 
 import 'package:charity_managment/core/theme/app_colors.dart';
@@ -155,9 +156,7 @@ class _CampaignFormState extends State<CampaignForm> {
                     child: hasImage
                         ? ClipRRect(
                             borderRadius: AppTheme.borderRadiusLg,
-                            child: value.text.startsWith('http')
-                                ? Image.network(value.text, fit: BoxFit.cover)
-                                : Image.file(File(value.text), fit: BoxFit.cover),
+                            child: _buildImage(value.text),
                           )
                         : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -230,12 +229,35 @@ class _CampaignFormState extends State<CampaignForm> {
 
   String? _url(String? value) {
     final text = (value ?? '').trim();
-    if (text.isEmpty) return 'Image URL is required';
+    if (text.isEmpty) return 'Image is required';
+    // Allow base64 data URLs (from web)
+    if (text.startsWith('data:image')) return null;
+    // Allow file paths (from mobile)
     if (text.startsWith('/')) return null;
+    // Allow network URLs
     final uri = Uri.tryParse(text);
     if (uri == null || (!uri.hasScheme || !uri.hasAuthority)) {
-      return 'Enter a valid URL';
+      return 'Invalid image';
     }
     return null;
+  }
+
+  Widget _buildImage(String imageValue) {
+    // Handle base64 data URL (from web file picker)
+    if (imageValue.startsWith('data:image')) {
+      final base64String = imageValue.split(',').last;
+      return Image.memory(
+        base64Decode(base64String),
+        fit: BoxFit.cover,
+      );
+    }
+    // Handle network URL
+    else if (imageValue.startsWith('http')) {
+      return Image.network(imageValue, fit: BoxFit.cover);
+    }
+    // Handle file path (from mobile)
+    else {
+      return Image.file(File(imageValue), fit: BoxFit.cover);
+    }
   }
 }
