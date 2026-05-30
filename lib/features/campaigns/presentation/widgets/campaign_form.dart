@@ -102,7 +102,7 @@ class _CampaignFormState extends State<CampaignForm> {
             const SizedBox(height: AppTheme.spacing16),
             FormInput(
               controller: widget.targetAmountController,
-              label: 'Target Amount (USD)',
+              label: 'Target Amount (ETB)',
               keyboardType: TextInputType.number,
               textInputAction: TextInputAction.next,
               validator: _amount,

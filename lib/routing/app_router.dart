@@ -177,8 +177,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const DonationsScreen(),
       ),
       GoRoute(
-        path: AppRoutes.anonymousDonations,
-        builder: (context, state) => const AnonymousDonationsScreen(),
+        path: AppRoutes.anonymoETBonations,
+        builder: (context, state) => const AnonymoETBonationsScreen(),
       ),
       GoRoute(
         path: AppRoutes.donationDetailPattern,
@@ -251,7 +251,7 @@ const _protectedRoutes = {
   AppRoutes.myCampaigns,
   AppRoutes.createCampaign,
   AppRoutes.donations,
-  AppRoutes.anonymousDonations,
+  AppRoutes.anonymoETBonations,
   AppRoutes.notifications,
   AppRoutes.profile,
   AppRoutes.editProfile,
@@ -271,7 +271,7 @@ bool _isProtectedLocation(String location) {
 
 bool _isDonorOnlyLocation(String location) {
   if (location == AppRoutes.donations ||
-      location == AppRoutes.anonymousDonations) {
+      location == AppRoutes.anonymoETBonations) {
     return true;
   }
 

@@ -8,7 +8,7 @@ final campaignRequestRepositoryProvider = Provider<ApiCampaignRequestRepository>
   return ApiCampaignRequestRepository(dio);
 });
 
-final campaignRequestsProvider = FutureProvider<List<CampaignRequest>>((ref) async {
+final campaignRequestsProvider = FutureProvider.family<CharityCampaignRequestsResponse, int>((ref, page) async {
   final repository = ref.watch(campaignRequestRepositoryProvider);
-  return repository.getAdminCampaignRequests();
+  return repository.getMyCampaignRequests(page: page);
 });

@@ -12,8 +12,8 @@ import 'package:charity_managment/shared/widgets/app_navigation_drawer.dart';
 import 'package:charity_managment/shared/widgets/app_scaffold.dart';
 import 'package:charity_managment/shared/widgets/empty_state.dart';
 
-class AnonymousDonationsScreen extends ConsumerWidget {
-  const AnonymousDonationsScreen({super.key});
+class AnonymoETBonationsScreen extends ConsumerWidget {
+  const AnonymoETBonationsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -61,7 +61,7 @@ class AnonymousDonationsScreen extends ConsumerWidget {
                 }
 
                 final donation = anonymous[visibilityState.hasError ? index - 1 : index];
-                return _AnonymousDonationTile(
+                return _AnonymoETBonationTile(
                   donationId: donation.id,
                   onMakeVisible: () => controller.setAnonymous(
                     donationId: donation.id,
@@ -80,8 +80,8 @@ class AnonymousDonationsScreen extends ConsumerWidget {
   }
 }
 
-class _AnonymousDonationTile extends ConsumerWidget {
-  const _AnonymousDonationTile({
+class _AnonymoETBonationTile extends ConsumerWidget {
+  const _AnonymoETBonationTile({
     required this.donationId,
     required this.onMakeVisible,
     required this.onOpenReceipt,

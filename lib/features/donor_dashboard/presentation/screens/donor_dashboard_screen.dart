@@ -133,7 +133,7 @@ class DonorDashboardScreen extends ConsumerWidget {
               child: _QuickActionsRow(
                 onBrowse: () => context.go(AppRoutes.campaigns),
                 onDonations: () => context.go(AppRoutes.donations),
-                onAnonymous: () => context.go(AppRoutes.anonymousDonations),
+                onAnonymous: () => context.go(AppRoutes.anonymoETBonations),
                 onFollowing: () => context.go(AppRoutes.followedCampaigns),
               ),
             ),

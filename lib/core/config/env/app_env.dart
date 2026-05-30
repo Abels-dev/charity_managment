@@ -21,7 +21,7 @@ class AppEnv {
     const envRaw = String.fromEnvironment('APP_ENV', defaultValue: 'dev');
     const baseUrlRaw = String.fromEnvironment(
       'API_BASE_URL',
-      defaultValue: 'http://localhost:5000',
+      defaultValue: 'https://894a-196-189-144-46.ngrok-free.app',
     );
 
     final env = switch (envRaw) {

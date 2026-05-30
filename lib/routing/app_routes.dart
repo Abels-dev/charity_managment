@@ -16,7 +16,7 @@ class AppRoutes {
   static const createCampaign = '/campaigns/create';
   static const editCampaignPattern = '/campaigns/:campaignId/edit';
   static const donations = '/donations';
-  static const anonymousDonations = '/dashboard/anonymous-donations';
+  static const anonymoETBonations = '/dashboard/anonymous-donations';
   static const donationDetailPattern = '/donations/:donationId';
   static const donationSuccessPattern = '/donations/:donationId/success';
   static const donationReceiptPattern = '/donations/:donationId/receipt';
