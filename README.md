@@ -15,19 +15,19 @@ Flutter mobile client for the Charity Management platform.
 ## Tech Stack
 
 * Flutter
-* Riverpod (state management)
-* GoRouter (navigation)
-* Dio (API layer)
+* Riverpod (State management)
+* GoRouter (Navigation)
+* Dio (Api layer)
 
 ## Project Structure
 
 Feature-first architecture with clear module boundaries:
 
-* `core/` app config and shared exceptions
-* `features/` domain-specific modules (auth, campaigns, donations, etc.)
-* `routing/` centralized app routes
+* `core/` App config and shared exceptions
+* `features/` Domain-specific modules (auth, campaigns, donations, etc.)
+* `routing/` Centralized app routes
 * `services/network/` API abstractions
-* `shared/` reusable widgets/state/mock data
+* `shared/` Reusable widgets/state/mock data
 
 ## Test Credentials
 
