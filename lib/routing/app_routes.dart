@@ -20,6 +20,8 @@ class AppRoutes {
   static const donationDetailPattern = '/donations/:donationId';
   static const donationSuccessPattern = '/donations/:donationId/success';
   static const donationReceiptPattern = '/donations/:donationId/receipt';
+  static const donationChapaReturn = '/payments/chapa/return';
+  static const donationCheckoutPattern = '/payments/chapa/:donationId';
   static const charityContributions = '/charity/contributions';
   static const charityCampaignRequests = '/charity/campaign-requests';
   static const bankAccounts = '/charity/bank-accounts';
@@ -36,4 +38,25 @@ class AppRoutes {
   static String donationDetail(String donationId) => '/donations/$donationId';
   static String donationSuccess(String donationId) => '/donations/$donationId/success';
   static String donationReceipt(String donationId) => '/donations/$donationId/receipt';
+  static String get mobileChapaReturnUrl {
+    return Uri(
+      scheme: 'charitymanagment',
+      host: 'app',
+      path: donationChapaReturn,
+    ).toString();
+  }
+
+  static String donationCheckout({
+    required String donationId,
+    required String txRef,
+    required String checkoutUrl,
+  }) {
+    return Uri(
+      path: '/payments/chapa/$donationId',
+      queryParameters: {
+        'txRef': txRef,
+        'checkoutUrl': checkoutUrl,
+      },
+    ).toString();
+  }
 }

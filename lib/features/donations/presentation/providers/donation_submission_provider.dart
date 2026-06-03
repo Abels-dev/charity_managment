@@ -1,20 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
-import 'package:charity_managment/features/campaigns/presentation/providers/campaign_detail_provider.dart';
+import 'package:charity_managment/features/donations/domain/donation_checkout_session.dart';
 import 'package:charity_managment/features/donations/domain/donation_create_input.dart';
-import 'package:charity_managment/features/donations/presentation/providers/donation_history_provider.dart';
 import 'package:charity_managment/features/donations/presentation/providers/donation_repository_provider.dart';
 import 'package:charity_managment/models/donation.dart';
+import 'package:charity_managment/routing/app_routes.dart';
 
-class DonationSubmissionController extends StateNotifier<AsyncValue<Donation?>> {
+class DonationSubmissionController
+    extends StateNotifier<AsyncValue<DonationCheckoutSession?>> {
   DonationSubmissionController(this._ref) : super(const AsyncValue.data(null));
 
   final Ref _ref;
 
-  Future<Donation?> submit(DonationCreateInput input) async {
-    if (input.amount <= 0) {
-      state = AsyncValue.error('Donation amount must be greater than 0.', StackTrace.current);
+  Future<DonationCheckoutSession?> submit(DonationCreateInput input) async {
+    if (input.amount < 10) {
+      state = AsyncValue.error(
+        'Minimum donation is 10 ETB.',
+        StackTrace.current,
+      );
       return null;
     }
 
@@ -40,25 +44,28 @@ class DonationSubmissionController extends StateNotifier<AsyncValue<Donation?>> 
         campaignId: input.campaignId,
         amount: input.amount,
         isAnonymous: input.isAnonymous,
-        message: input.message?.trim().isEmpty ?? true ? null : input.message?.trim(),
-        transactionId: 'sim_${DateTime.now().millisecondsSinceEpoch}',
+        message:
+            input.message?.trim().isEmpty ?? true ? null : input.message?.trim(),
+        transactionId: 'checkout_${DateTime.now().millisecondsSinceEpoch}',
         status: DonationStatus.pending,
         donatedAt: DateTime.now(),
         guestName: user == null ? donorName : null,
         guestEmail: user == null ? donorEmail : null,
       );
 
-      final completedDonation = await repository.createDirectDonation(
+      final checkoutSession = await repository.createDonationCheckout(
         donation,
         donorName: donorName,
         donorEmail: donorEmail,
+        returnUrl: AppRoutes.mobileChapaReturnUrl,
       );
 
-      _ref.invalidate(campaignDetailProvider(input.campaignId));
-      _ref.invalidate(donationHistoryProvider);
+      if (checkoutSession.checkoutUrl.isEmpty || checkoutSession.txRef.isEmpty) {
+        throw StateError('Payment checkout could not be initialized.');
+      }
 
-      state = AsyncValue.data(completedDonation);
-      return completedDonation;
+      state = AsyncValue.data(checkoutSession);
+      return checkoutSession;
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
       return null;
@@ -70,7 +77,7 @@ class DonationSubmissionController extends StateNotifier<AsyncValue<Donation?>> 
   }
 }
 
-final donationSubmissionProvider =
-    StateNotifierProvider.autoDispose<DonationSubmissionController, AsyncValue<Donation?>>((ref) {
+final donationSubmissionProvider = StateNotifierProvider.autoDispose<
+    DonationSubmissionController, AsyncValue<DonationCheckoutSession?>>((ref) {
   return DonationSubmissionController(ref);
 });

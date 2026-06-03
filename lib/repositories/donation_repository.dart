@@ -3,14 +3,6 @@ import 'package:charity_managment/models/donation_receipt.dart';
 import 'package:charity_managment/features/donations/domain/donation_checkout_session.dart';
 
 abstract class DonationRepository {
-  Future<Donation> createDonation(Donation donation);
-
-  Future<Donation> createDirectDonation(
-    Donation donation, {
-    String? donorName,
-    String? donorEmail,
-  });
-
   Future<DonationCheckoutSession> createDonationCheckout(
     Donation donation, {
     String? donorName,

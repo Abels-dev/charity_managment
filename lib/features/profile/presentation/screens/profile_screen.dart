@@ -611,11 +611,15 @@ class _StatTile extends StatelessWidget {
           Text(
             value,
             style: AppTextStyles.display.copyWith(fontSize: 24, color: AppColors.primary),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: AppTextStyles.micro.copyWith(color: AppColors.textBody),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -672,7 +676,14 @@ class _BankAccountTile extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Text(account.bankName, style: AppTextStyles.label),
+                    Flexible(
+                      child: Text(
+                        account.bankName,
+                        style: AppTextStyles.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

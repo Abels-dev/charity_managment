@@ -79,10 +79,11 @@ class CampaignCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
+                          Wrap(
+                            spacing: AppTheme.spacing8,
+                            runSpacing: AppTheme.spacing4,
                             children: [
                               CategoryBadge(category: campaign.category.label),
-                              const SizedBox(width: AppTheme.spacing8),
                               CampaignStatusBadge(status: campaign.status),
                             ],
                           ),
@@ -115,9 +116,13 @@ class CampaignCard extends StatelessWidget {
                   children: [
                     const Icon(Icons.business, size: 16, color: AppColors.textBody),
                     const SizedBox(width: AppTheme.spacing4),
-                    Text(
-                      campaign.organizationName,
-                      style: AppTextStyles.label.copyWith(color: AppColors.textBody),
+                    Expanded(
+                      child: Text(
+                        campaign.organizationName,
+                        style: AppTextStyles.label.copyWith(color: AppColors.textBody),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -135,13 +140,22 @@ class CampaignCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '${CampaignFormatters.percent(campaign.progress)} funded',
-                      style: AppTextStyles.label.copyWith(color: AppColors.primary),
+                    Flexible(
+                      child: Text(
+                        '${CampaignFormatters.percent(campaign.progress)} funded',
+                        style: AppTextStyles.label.copyWith(color: AppColors.primary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    Text(
-                      '${CampaignFormatters.money(campaign.currentAmount)} / ${CampaignFormatters.money(campaign.goalAmount)}',
-                      style: AppTextStyles.label.copyWith(color: AppColors.textBody),
+                    const SizedBox(width: AppTheme.spacing8),
+                    Flexible(
+                      child: Text(
+                        '${CampaignFormatters.money(campaign.currentAmount)} / ${CampaignFormatters.money(campaign.goalAmount)}',
+                        style: AppTextStyles.label.copyWith(color: AppColors.textBody),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),

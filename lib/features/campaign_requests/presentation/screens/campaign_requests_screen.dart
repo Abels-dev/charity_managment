@@ -225,9 +225,19 @@ class _SummaryGrid extends StatelessWidget {
                 children: [
                   Icon(item.icon, color: Theme.of(context).colorScheme.primary),
                   const SizedBox(height: 12),
-                  Text(item.value, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+                  Text(
+                    item.value,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 4),
-                  Text(item.label, style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    item.label,
+                    style: Theme.of(context).textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             );

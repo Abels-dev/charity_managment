@@ -54,44 +54,6 @@ class ApiDonationRepository implements DonationRepository {
   }
 
   @override
-  Future<Donation> createDonation(Donation donation) async {
-    try {
-      final response = await _dio.post('/api/campaign/${donation.campaignId}/donate', data: {
-        'amount': donation.amount,
-        'isAnonymous': donation.isAnonymous,
-        'message': donation.message,
-      });
-      final data = _asMap(response.data['data']);
-      final donationData = _asMap(data['donation']);
-      if (donationData.isEmpty) {
-        throw Exception('Donation payload missing');
-      }
-      return _mapDonation(donationData);
-    } catch (e) {
-      throw Exception('Failed to create donation');
-    }
-  }
-
-  @override
-  Future<Donation> createDirectDonation(
-    Donation donation, {
-    String? donorName,
-    String? donorEmail,
-  }) async {
-    final response = await _dio.post('/api/campaign/${donation.campaignId}/donate-direct', data: {
-      'amount': donation.amount,
-      'isAnonymous': donation.isAnonymous,
-      'message': donation.message,
-      if (donorName != null) 'guestName': donorName,
-      if (donorEmail != null) 'guestEmail': donorEmail,
-    });
-
-    final data = _asMap(response.data['data']);
-    final donationData = _asMap(data['donation']);
-    return _mapDonation(donationData);
-  }
-
-  @override
   Future<DonationCheckoutSession> createDonationCheckout(
     Donation donation, {
     String? donorName,
@@ -126,13 +88,11 @@ class ApiDonationRepository implements DonationRepository {
     final data = _asMap(response.data['data']);
     final donationData = _asMap(data['donation']);
     final chapaData = _asMap(data['chapa']);
-    final fields = _asMap(chapaData['fields']);
 
     return DonationCheckoutSession(
       donationId: donationData['id']?.toString() ?? donation.id,
-      txRef: donationData['transactionId']?.toString() ?? fields['tx_ref']?.toString() ?? '',
-      actionUrl: chapaData['actionUrl']?.toString() ?? '',
-      fields: fields,
+      txRef: donationData['transactionId']?.toString() ?? '',
+      checkoutUrl: chapaData['checkoutUrl']?.toString() ?? '',
     );
   }
 
@@ -242,12 +202,9 @@ class ApiDonationRepository implements DonationRepository {
       );
 
       final checkoutData = _asMap(response.data['data']);
-      final checkoutSession = _asMap(checkoutData['checkout']);
+      final chapaData = _asMap(checkoutData['chapa']);
 
-      return checkoutSession['checkoutUrl'] ?? 
-             checkoutSession['redirectUrl'] ?? 
-             checkoutSession['txRef'] ?? 
-             '';
+      return chapaData['checkoutUrl']?.toString() ?? '';
     } catch (e) {
       throw Exception('Failed to initiate Chapa checkout');
     }
@@ -277,4 +234,3 @@ class ApiDonationRepository implements DonationRepository {
   }
 
 }
-

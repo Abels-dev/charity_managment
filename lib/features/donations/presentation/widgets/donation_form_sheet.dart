@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:charity_managment/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:charity_managment/features/donations/domain/donation_checkout_session.dart';
 import 'package:charity_managment/features/donations/domain/donation_create_input.dart';
 import 'package:charity_managment/features/donations/presentation/providers/donation_submission_provider.dart';
 import 'package:charity_managment/models/campaign.dart';
-import 'package:charity_managment/models/donation.dart';
 
 import 'package:charity_managment/core/widgets/app_button.dart';
 import 'package:charity_managment/core/widgets/form_input.dart';
@@ -21,7 +21,7 @@ class DonationFormSheet extends ConsumerStatefulWidget {
   });
 
   final Campaign campaign;
-  final ValueChanged<String>? onSuccess;
+  final ValueChanged<DonationCheckoutSession>? onSuccess;
 
   @override
   ConsumerState<DonationFormSheet> createState() => _DonationFormSheetState();
@@ -33,7 +33,7 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
   late final TextEditingController _messageController;
   late final TextEditingController _guestNameController;
   late final TextEditingController _guestEmailController;
-  late final ProviderSubscription<AsyncValue<Donation?>> _submissionSub;
+  late final ProviderSubscription<AsyncValue<DonationCheckoutSession?>> _submissionSub;
   bool _isAnonymous = false;
 
   @override
@@ -44,7 +44,7 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
     _guestNameController = TextEditingController();
     _guestEmailController = TextEditingController();
 
-    _submissionSub = ref.listenManual<AsyncValue<Donation?>>(
+    _submissionSub = ref.listenManual<AsyncValue<DonationCheckoutSession?>>(
       donationSubmissionProvider,
       (previous, next) {
         if (next.hasError) {
@@ -57,7 +57,9 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
 
         if (next.hasValue && next.value != null) {
           if (!mounted) return;
-          widget.onSuccess?.call(next.value!.id);
+          final checkoutSession = next.value!;
+          Navigator.of(context).maybePop();
+          widget.onSuccess?.call(checkoutSession);
         }
       },
     );
@@ -162,8 +164,8 @@ class _DonationFormSheetState extends ConsumerState<DonationFormSheet> {
                 if (amount == null) {
                   return 'Please enter a valid amount.';
                 }
-                if (amount <= 0) {
-                  return 'Amount must be greater than 0.';
+                if (amount < 10) {
+                  return 'Minimum donation is 10 ETB.';
                 }
                 return null;
               },

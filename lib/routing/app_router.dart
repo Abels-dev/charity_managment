@@ -21,6 +21,7 @@ import 'package:charity_managment/features/donor_dashboard/presentation/screens/
 import 'package:charity_managment/features/bank_accounts/presentation/screens/bank_accounts_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/anonymous_donations_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donations_screen.dart';
+import 'package:charity_managment/features/donations/presentation/screens/donation_checkout_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donation_detail_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donation_success_screen.dart';
 import 'package:charity_managment/features/donations/presentation/screens/donation_receipt_screen.dart';
@@ -175,6 +176,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AnonymoETBonationsScreen(),
       ),
       GoRoute(
+        path: AppRoutes.donationChapaReturn,
+        builder: (context, state) {
+          final txRef = state.uri.queryParameters['tx_ref'] ??
+              state.uri.queryParameters['txRef'] ??
+              state.uri.queryParameters['transactionId'] ??
+              '';
+          return DonationCheckoutScreen(
+            donationId: '',
+            txRef: txRef,
+            checkoutUrl: '',
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.donationCheckoutPattern,
+        builder: (context, state) {
+          final donationId = state.pathParameters['donationId']!;
+          final txRef = state.uri.queryParameters['txRef'] ?? '';
+          final checkoutUrl = state.uri.queryParameters['checkoutUrl'] ?? '';
+          return DonationCheckoutScreen(
+            donationId: donationId,
+            txRef: txRef,
+            checkoutUrl: checkoutUrl,
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.donationDetailPattern,
         builder: (context, state) {
           final donationId = state.pathParameters['donationId']!;
@@ -260,7 +288,7 @@ bool _isProtectedLocation(String location) {
     return true;
   }
 
-  return location.startsWith('${AppRoutes.donations}/');
+  return false;
 }
 
 bool _isDonorOnlyLocation(String location) {
@@ -269,7 +297,7 @@ bool _isDonorOnlyLocation(String location) {
     return true;
   }
 
-  return location.startsWith('${AppRoutes.donations}/');
+  return false;
 }
 
 bool _isCharityOnlyLocation(String location) {

@@ -278,8 +278,12 @@ class CampaignDetailScreen extends ConsumerWidget {
                               backgroundColor: AppColors.background,
                               builder: (_) => DonationFormSheet(
                                 campaign: campaign,
-                                onSuccess: (donationId) {
-                                  context.go(AppRoutes.donationSuccess(donationId));
+                                onSuccess: (checkoutSession) {
+                                  context.go(AppRoutes.donationCheckout(
+                                    donationId: checkoutSession.donationId,
+                                    txRef: checkoutSession.txRef,
+                                    checkoutUrl: checkoutSession.checkoutUrl,
+                                  ));
                                 },
                               ),
                             );

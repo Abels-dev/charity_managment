@@ -44,6 +44,8 @@ class DashboardStatCard extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.micro.copyWith(color: AppColors.textBody),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: AppTheme.spacing4),
                 Text(
@@ -52,6 +54,8 @@ class DashboardStatCard extends StatelessWidget {
                     fontSize: 18,
                     color: AppColors.textPrimary,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

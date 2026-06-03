@@ -2,12 +2,10 @@ class DonationCheckoutSession {
   const DonationCheckoutSession({
     required this.donationId,
     required this.txRef,
-    required this.actionUrl,
-    required this.fields,
+    required this.checkoutUrl,
   });
 
   final String donationId;
   final String txRef;
-  final String actionUrl;
-  final Map<String, dynamic> fields;
+  final String checkoutUrl;
 }

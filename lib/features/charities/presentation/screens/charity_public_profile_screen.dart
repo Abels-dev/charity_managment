@@ -686,6 +686,8 @@ class _StatTile extends StatelessWidget {
               color: AppColors.textBody,
               fontWeight: FontWeight.w600,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

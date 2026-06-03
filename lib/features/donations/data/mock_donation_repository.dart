@@ -9,39 +9,6 @@ class MockDonationRepository implements DonationRepository {
   static final Map<String, DonationReceipt> _receipts = _seedReceipts();
 
   @override
-  Future<Donation> createDonation(Donation donation) async {
-    await Future<void>.delayed(const Duration(milliseconds: 900));
-    _donations.insert(0, donation);
-    return donation;
-  }
-
-  @override
-  Future<Donation> createDirectDonation(
-    Donation donation, {
-    String? donorName,
-    String? donorEmail,
-  }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 900));
-
-    final completed = Donation(
-      id: donation.id,
-      donorId: donation.donorId,
-      campaignId: donation.campaignId,
-      amount: donation.amount,
-      isAnonymous: donation.isAnonymous,
-      message: donation.message,
-      transactionId: donation.transactionId,
-      status: DonationStatus.completed,
-      donatedAt: donation.donatedAt,
-      guestName: donorName,
-      guestEmail: donorEmail,
-    );
-
-    _donations.insert(0, completed);
-    return completed;
-  }
-
-  @override
   Future<DonationCheckoutSession> createDonationCheckout(
     Donation donation, {
     String? donorName,
@@ -53,8 +20,7 @@ class MockDonationRepository implements DonationRepository {
     return DonationCheckoutSession(
       donationId: donation.id,
       txRef: donation.transactionId,
-      actionUrl: 'https://example.org/mock-checkout',
-      fields: const {},
+      checkoutUrl: 'https://example.org/mock-checkout',
     );
   }
 
